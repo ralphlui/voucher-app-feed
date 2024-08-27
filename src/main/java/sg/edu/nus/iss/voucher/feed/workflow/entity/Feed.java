@@ -1,32 +1,23 @@
 package sg.edu.nus.iss.voucher.feed.workflow.entity;
 
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
-import org.hibernate.annotations.UuidGenerator;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-
+@Getter
+@Setter
 public class Feed {
-	@Id
-	@UuidGenerator(style = UuidGenerator.Style.AUTO)
-	private String feedId;
 	
-	@Column(nullable = false)
-	private String campaignId;
-
-	@Column(nullable = false)
-	private boolean isDeleted = false;
+	private String feedId ="";
+	private String campaign="";
+	private String store ="";
+	private String isDeleted = "0";
+	private String isReaded = "0";
+	private String readTime="";
+	private String targetUserName="";
+	private String targetUserEmail="";
+	private String createdDate="";
+	private String updatedDate="";
+	private String category="";
 	
-	@Column(nullable = false)
-	private boolean isRead = false;
 	
-	@Column(nullable = true, columnDefinition = "datetime")
-	private LocalDateTime readTime;
-		
-	@Column(nullable = false)
-	private String targetUserId;
-
-	@Column(nullable = false, columnDefinition = "datetime default now()")
-	private LocalDateTime createdDate;
 }
