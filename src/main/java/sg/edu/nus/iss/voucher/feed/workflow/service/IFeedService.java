@@ -7,7 +7,7 @@ import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 
 public interface IFeedService {
-	public Map<Long, List<FeedDTO>> getFeedsByEmailWithPagination(String targetedUserId, int page, int size);
+	public Map<Long, List<FeedDTO>> getFeedsByUserWithPagination(String userId, int page, int size);
 	
 	public FeedDTO findByFeedId(String feedId);
 	

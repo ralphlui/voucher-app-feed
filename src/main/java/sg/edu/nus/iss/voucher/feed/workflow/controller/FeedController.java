@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,34 +26,34 @@ import sg.edu.nus.iss.voucher.feed.workflow.utility.*;
 
 @RestController
 @Validated
-@RequestMapping("/api/feed")
+@RequestMapping("/api/feeds")
 public class FeedController {
 	private static final Logger logger = LoggerFactory.getLogger(FeedController.class);
 
 	@Autowired
 	private FeedService feedService;
 	
-
-	@PostMapping(value = "/getByEmail", produces = "application/json")
-	public ResponseEntity<APIResponse<List<FeedDTO>>> getByEmail(@RequestBody APIRequest request,
+	@GetMapping(value = "/users/{userId}", produces = "application/json")
+	public ResponseEntity<APIResponse<List<FeedDTO>>> getByUserId(@PathVariable("userId") String userId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "50") int size) {
 
-		logger.info("Call feeds ByEmail feed API...");
+		logger.info("Call feeds by UserId feed API...");
 		try {
 			String message = "";
-			logger.info("UserRequest: " + request.getEmail());
-			String email = GeneralUtility.makeNotNull(request.getEmail()).trim();
-			if (!email.equals("")) {
-				logger.info("email: " + email);
-				Map<Long, List<FeedDTO>> resultMap = feedService.getFeedsByEmailWithPagination(email, page, size);
+			logger.info("userId: " + userId);
+		
+			 userId = GeneralUtility.makeNotNull(userId).trim();
+			if (!userId.equals("")) {
+				
+				Map<Long, List<FeedDTO>> resultMap = feedService.getFeedsByUserWithPagination(userId, page, size);
 				List<FeedDTO> feedDTOList = new ArrayList<FeedDTO>();
 				long totalRecord = 0;
 				if (resultMap.size() == 0) {
-					String mesasge = "No feed found for email: ";
+					String mesasge = "No feed found for user: ";
 					logger.error(mesasge);
 					return ResponseEntity.status(HttpStatus.NOT_FOUND)
-							.body(APIResponse.success(feedDTOList, mesasge + email, totalRecord));
+							.body(APIResponse.success(feedDTOList, mesasge + userId, totalRecord));
 				}
 				for (Map.Entry<Long, List<FeedDTO>> entry : resultMap.entrySet()) {
 					totalRecord = entry.getKey();
@@ -59,7 +62,7 @@ public class FeedController {
 					logger.info("FeedDTO List: " + feedDTOList);
 				}
 				return ResponseEntity.status(HttpStatus.OK)
-						.body(APIResponse.success(feedDTOList, "Successfully get all feeds for email: " + email,
+						.body(APIResponse.success(feedDTOList, "Successfully get all feeds for user: " + userId,
 								totalRecord));
 			} else {
 				message = "Bad Request:User could not be blank.";
@@ -74,12 +77,12 @@ public class FeedController {
 	}
 	
 	
-	@PostMapping(value = "/getById", produces = "application/json")
-	public ResponseEntity<APIResponse<FeedDTO>> getFeedById(@RequestBody Feed feed) {
+	@GetMapping(value = "/{id}", produces = "application/json")
+	public ResponseEntity<APIResponse<FeedDTO>> getFeedById(@PathVariable("id") String id) {
 		try {
 			logger.info("Calling getById Feed API...");
 			String message = "";
-			String feedId = GeneralUtility.makeNotNull(feed.getFeedId());
+			String feedId = GeneralUtility.makeNotNull(id);
 			logger.info("feedId: " + feedId);
 			if (!GeneralUtility.makeNotNull(feedId).equals("")) {
 				FeedDTO feedDTO = feedService.findByFeedId(feedId);
@@ -106,11 +109,11 @@ public class FeedController {
 		}
 	}
 	
-	@PostMapping(value = "/updateReadStatusById", produces = "application/json")
-	public ResponseEntity<APIResponse<FeedDTO>> updateReadStatusById(@RequestBody Feed feed) {
+	@PatchMapping(value = "/{id}/readStatus", produces = "application/json")
+	public ResponseEntity<APIResponse<FeedDTO>> patchFeedReadStatus(@PathVariable("id") String id) {
 		try {
 			logger.info("Calling updateReadStatusById Feed API...");
-			String feedId = GeneralUtility.makeNotNull(feed.getFeedId());
+			String feedId = GeneralUtility.makeNotNull(id);
 			logger.info("feedId: " + feedId);
 			String message = "";
 			if (!GeneralUtility.makeNotNull(feedId).equals("")) {
@@ -130,7 +133,7 @@ public class FeedController {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.error("Calling updateReadStatusById feed API failed , " + e.toString());
+			logger.error("Calling patchFeedReadStatus feed API failed , " + e.toString());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(APIResponse.error(e.toString()));
 		}
 	}

@@ -19,7 +19,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 public class VoucherFeedSecurityConfig {
 
-    private static final String[] SECURED_URLS = { "/api/feed/**", "/ws/liveFeeds/**" };
+    private static final String[] SECURED_URLS = { "/api/feeds/**", "/ws/liveFeeds/**" };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,7 +51,7 @@ public class VoucherFeedSecurityConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                     .allowedOrigins("*")
-                    .allowedMethods("GET", "POST", "PUT")
+                    .allowedMethods("GET", "POST", "PUT","PATCH")
                     .allowedHeaders("*");
             }
         };

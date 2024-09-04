@@ -12,6 +12,7 @@ import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
 import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.utility.EncryptionUtils;
+import sg.edu.nus.iss.voucher.feed.workflow.utility.JSONReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,10 @@ public class FeedServiceTest {
 
     @Mock
     private EncryptionUtils encryptionUtils;
+    
+    @Mock
+    private JSONReader jsonReader;
+
 
     @InjectMocks
     private FeedService feedService;
@@ -37,30 +42,33 @@ public class FeedServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(feedService, "encryptionUtils", encryptionUtils);
+        ReflectionTestUtils.setField(feedService, "jsonReader", jsonReader);
     }
 
     @Test
     void testGetFeedsByEmailWithPagination() throws Exception {
-      
-        String targetedUserEmail = "john@example.com";
+        String userId = "12345";
+        String email = "john@example.com";
         String encodedEmail = "encodedEmail";
         List<Feed> feeds = new ArrayList<>();
         Feed feed = new Feed();
         feed.setTargetUserEmail(encodedEmail);
         feeds.add(feed);
-        
-        when(encryptionUtils.encrypt(targetedUserEmail)).thenReturn(encodedEmail);
-        when(encryptionUtils.decrypt(encodedEmail)).thenReturn(targetedUserEmail);
-        when(feedDao.getAllFeedByEmail(anyString(), anyInt(), anyInt())).thenReturn(feeds);
 
-        Map<Long, List<FeedDTO>> result = feedService.getFeedsByEmailWithPagination(targetedUserEmail, 0, 10);
+        when(jsonReader.getUserEmailById(userId)).thenReturn(email);
+        when(encryptionUtils.encrypt(email)).thenReturn(encodedEmail);
+        when(encryptionUtils.decrypt(encodedEmail)).thenReturn(email);
+        when(feedDao.getAllFeedByEmail(encodedEmail, 0, 10)).thenReturn(feeds);
+
+        Map<Long, List<FeedDTO>> result = feedService.getFeedsByUserWithPagination(userId, 0, 10);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
         assertTrue(result.containsKey(1L));
         assertEquals(1, result.get(1L).size());
-        verify(feedDao, times(1)).getAllFeedByEmail(anyString(), anyInt(), anyInt());
+        verify(feedDao, times(1)).getAllFeedByEmail(encodedEmail, 0, 10);
     }
+
 
     @Test
     void testFindByFeedId() throws Exception {

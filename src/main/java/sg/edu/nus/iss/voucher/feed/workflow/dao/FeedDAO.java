@@ -25,6 +25,7 @@ import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 
 import sg.edu.nus.iss.voucher.feed.workflow.entity.*;
+import sg.edu.nus.iss.voucher.feed.workflow.utility.GeneralUtility;
 
 @Repository
 public class FeedDAO {
@@ -121,15 +122,15 @@ public class FeedDAO {
 
 	        if (item != null && !item.isEmpty()) {
 	            feed = new Feed();
-	            feed.setFeedId(item.get(FEEDID).getS());
-	            feed.setCampaign(item.get(CAMPAIGN).getS());
-	            feed.setStore(item.get(STORE).getS());
-	            feed.setTargetUserName(item.get(TARGETUSERENAME).getS());
-	            feed.setTargetUserEmail(item.get(TARGETUSEREMAIL).getS());
-	            feed.setIsDeleted(item.get(ISDELETED).getS());
-	            feed.setIsReaded(item.get(ISREADED).getS());
-	            feed.setReadTime(item.get(READTIME).getS());
-	            feed.setCreatedDate(item.get(CREATEDDATE).getS());
+	            feed.setFeedId(GeneralUtility.makeNotNull(item.get(FEEDID).getS()));
+	            feed.setCampaign(GeneralUtility.makeNotNull(item.get(CAMPAIGN).getS()));
+	            feed.setStore(GeneralUtility.makeNotNull(item.get(STORE).getS()));
+	            feed.setTargetUserName(GeneralUtility.makeNotNull(item.get(TARGETUSERENAME).getS()));
+	            feed.setTargetUserEmail(GeneralUtility.makeNotNull(item.get(TARGETUSEREMAIL).getS()));
+	            feed.setIsDeleted(GeneralUtility.makeNotNull(item.get(ISDELETED).getS()));
+	            feed.setIsReaded(GeneralUtility.makeNotNull(item.get(ISREADED).getS()));
+	            feed.setReadTime(GeneralUtility.makeNotNull(item.get(READTIME).getS()));
+	            feed.setCreatedDate(GeneralUtility.makeNotNull(item.get(CREATEDDATE).getS()));
 	        }
 
 	    } catch (Exception ex) {

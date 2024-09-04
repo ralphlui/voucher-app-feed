@@ -35,12 +35,12 @@ public class JSONReaderTest {
 
     @Test
     public void testReadFeedMessage() {
-        String message = "{\"category\":\"testCategory\",\"campaign\":\"{\\\"description\\\":\\\"testCampaign\\\"}\",\"store\":\"{\\\"name\\\":\\\"testStore\\\"}\"}";
+        String message = "{\"preference\":\"testPreference\",\"campaign\":\"{\\\"description\\\":\\\"testCampaign\\\"}\",\"store\":\"{\\\"name\\\":\\\"testStore\\\"}\"}";
 
         FeedEventPayload result = jsonReader.readFeedMessage(message);
 
         assertNotNull(result);
-        assertEquals("testCategory", result.getCategory());
+        assertEquals("testPreference", result.getPreference());
         assertEquals("testCampaign", result.getCampaign());
         assertEquals("testStore", result.getStore());
     }
@@ -49,9 +49,9 @@ public class JSONReaderTest {
     public void testGetAllTargetUsers() throws ParseException {
         String mockResponse = "{\"totalRecord\":2,\"data\":[{\"email\":\"test1@example.com\",\"username\":\"user1\"},{\"email\":\"test2@example.com\",\"username\":\"user2\"}]}";
 
-        when(apiCall.getTargetUsers(anyString(), anyInt(), anyInt())).thenReturn(mockResponse);
+        when(apiCall.getUsersByPreferences(anyString(), anyInt(), anyInt())).thenReturn(mockResponse);
 
-        HashMap<String, String> result = jsonReader.getAllTargetUsers("testCategory");
+        HashMap<String, String> result = jsonReader.getUsersByPreferences("testPreference");
 
         assertNotNull(result);
         assertEquals(2, result.size());

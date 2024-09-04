@@ -8,6 +8,6 @@ import lombok.Setter;
 public class FeedEventPayload {
 	private String campaign;
 	private String store;
-	private String category;
+	private String preference;
 
 }

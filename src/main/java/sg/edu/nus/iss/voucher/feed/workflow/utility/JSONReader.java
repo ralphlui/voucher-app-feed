@@ -20,7 +20,7 @@ public class JSONReader {
 
 	@Value("${api.list.call.page.max-size}")
 	public String pageMaxSize;
-	
+
 	@Autowired
 	AuthAPICall apiCall;
 
@@ -31,7 +31,7 @@ public class JSONReader {
 		try {
 			JSONObject jsonMessage = (JSONObject) new JSONParser().parse(message);
 			if (jsonMessage != null) {
-				String category = jsonMessage.get("category").toString();
+				String preference = jsonMessage.get("preference").toString();
 				String campaign = jsonMessage.get("campaign").toString();
 				JSONObject jsonObjCampaign = (JSONObject) new JSONParser().parse(campaign);
 				String campaignDescription = jsonObjCampaign.get("description").toString();
@@ -40,7 +40,7 @@ public class JSONReader {
 				JSONObject jsonObjStore = (JSONObject) new JSONParser().parse(store);
 				String storeName = jsonObjStore.get("name").toString();
 
-				feedMsg.setCategory(GeneralUtility.makeNotNull(category));
+				feedMsg.setPreference(GeneralUtility.makeNotNull(preference));
 				feedMsg.setCampaign(GeneralUtility.makeNotNull(campaignDescription));
 				feedMsg.setStore(GeneralUtility.makeNotNull(storeName));
 
@@ -52,14 +52,14 @@ public class JSONReader {
 		return feedMsg;
 	}
 
-	public HashMap<String, String> getAllTargetUsers(String category) {
+	public HashMap<String, String> getUsersByPreferences(String preferences) {
 		int page = 1;
 		int size = Integer.parseInt(pageMaxSize);
 		int totalRecord;
-		
+
 		HashMap<String, String> targetUsers = new HashMap<String, String>();
 		do {
-			String responseStr = apiCall.getTargetUsers(category, page, size);
+			String responseStr = apiCall.getUsersByPreferences(preferences, page, size);
 			try {
 
 				JSONParser parser = new JSONParser();
@@ -87,6 +87,31 @@ public class JSONReader {
 		} while (totalRecord > page * size);
 		return targetUsers;
 	}
-	
+
+	public String getUserEmailById(String userId) {
+
+		String email = "";
+
+		String responseStr = apiCall.getUserById(userId);
+		try {
+
+			JSONParser parser = new JSONParser();
+			JSONObject jsonResponse = (JSONObject) parser.parse(responseStr);
+
+			JSONArray data = (JSONArray) jsonResponse.get("data");
+			for (Object obj : data) {
+				JSONObject user = (JSONObject) obj;
+				logger.info("User: " + user.toJSONString());
+				email = GeneralUtility.makeNotNull(user.get("email").toString());
+
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
+			logger.error("Error parsing JSON response... {}", e.toString());
+
+		}
+
+		return email;
+	}
 
 }

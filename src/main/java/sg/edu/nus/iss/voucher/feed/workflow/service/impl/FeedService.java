@@ -27,39 +27,46 @@ public class FeedService implements IFeedService {
 	public FeedService(FeedDAO feedDao) {
 		this.feedDao = feedDao;
 	}
-	
+
 	@Autowired
 	private EncryptionUtils encryptionUtils;
 
+	@Autowired
+	private JSONReader jsonReader;
 
 	@Override
-	public Map<Long, List<FeedDTO>> getFeedsByEmailWithPagination(String targetedUserEmail, int page, int size) {
+	public Map<Long, List<FeedDTO>> getFeedsByUserWithPagination(String userId, int page, int size) {
 
 		logger.info("Getting all feeds by Email");
 		Map<Long, List<FeedDTO>> result = new HashMap<>();
 		List<FeedDTO> feedDTOList = new ArrayList<FeedDTO>();
 		try {
+			String email = GeneralUtility.makeNotNull(jsonReader.getUserEmailById(userId));
 
-			String encodedTargetedUserEmail = encryptionUtils.encrypt(targetedUserEmail);
-			logger.info("encodedTargetedUserEmail {},...", encodedTargetedUserEmail);
+			logger.info("email: " + email);
+			if (!email.equals("")) {
+				String encodedUserEmail = encryptionUtils.encrypt(email);
+				logger.info("encodedTargetedUserEmail {},...", encodedUserEmail);
 
-			List<Feed> feeds = feedDao.getAllFeedByEmail(encodedTargetedUserEmail, page, size);
-			long totalRecord = feeds.size();
-			if (totalRecord > 0) {
-				logger.info("Found {}, converting to Feed DTOs...", totalRecord);
-				for (Feed feed : feeds) {
-					feed.setTargetUserEmail(encryptionUtils.decrypt(feed.getTargetUserEmail()));
-					FeedDTO feedDTO = DTOMapper.toFeedDTO(feed);
-					feedDTOList.add(feedDTO);
+				List<Feed> feeds = feedDao.getAllFeedByEmail(encodedUserEmail, page, size);
+				long totalRecord = feeds.size();
+				if (totalRecord > 0) {
+					logger.info("Found {}, converting to Feed DTOs...", totalRecord);
+					for (Feed feed : feeds) {
+						feed.setTargetUserEmail(encryptionUtils.decrypt(feed.getTargetUserEmail()));
+						FeedDTO feedDTO = DTOMapper.toFeedDTO(feed);
+						feedDTOList.add(feedDTO);
+					}
+
+					result.put(totalRecord, feedDTOList);
+				} else {
+					logger.info("No feed found...");
 				}
-
-				result.put(totalRecord, feedDTOList);
 			} else {
-				logger.info("No feed found...");
+				logger.info("No Email found for UserId {}...", userId);
 			}
-
 		} catch (Exception ex) {
-			logger.error("Find read Feed by Email exception... {}", ex.toString());
+			logger.error("Find read Feed by User exception... {}", ex.toString());
 		}
 		return result;
 	}
@@ -105,6 +112,5 @@ public class FeedService implements IFeedService {
 		}
 		return feedDTO;
 	}
-
 
 }

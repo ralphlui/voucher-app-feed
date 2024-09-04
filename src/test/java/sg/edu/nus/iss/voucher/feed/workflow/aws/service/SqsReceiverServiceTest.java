@@ -62,7 +62,7 @@ public class SqsReceiverServiceTest {
     void testProcessMessage() {
        
         String messageBody = "{\n"
-                + "    \"category\":\"test\",\n"
+                + "    \"preference\":\"test\",\n"
                 + "    \"campaign\":{\n"
                 + "     \"description\":\"Aroma from Nature II\"\n"
                 + "    },\n"
@@ -72,7 +72,7 @@ public class SqsReceiverServiceTest {
                 + "}";
         Message mockMessage = new Message().withBody(messageBody);
         FeedEventPayload feedMessage = new FeedEventPayload(); 
-        feedMessage.setCategory("test");
+        feedMessage.setPreference("test");
         feedMessage.setCampaign("Aroma from Nature II");
         feedMessage.setStore("MUJI");
         when(jsonReader.readFeedMessage(messageBody)).thenReturn(feedMessage);
@@ -118,9 +118,9 @@ public class SqsReceiverServiceTest {
         expectedTargetUsers.put("user1@example.com", "User One");
         expectedTargetUsers.put("user2@example.com", "User Two");
 
-        when(jsonReader.getAllTargetUsers("category1")).thenReturn(expectedTargetUsers);
+        when(jsonReader.getUsersByPreferences("preference1")).thenReturn(expectedTargetUsers);
 
-        HashMap<String, String> actualTargetUsers = sqsReceiverService.getTargetUsers("category1");
+        HashMap<String, String> actualTargetUsers = sqsReceiverService.getTargetUsers("preference1");
 
         assertEquals(expectedTargetUsers, actualTargetUsers);
     }

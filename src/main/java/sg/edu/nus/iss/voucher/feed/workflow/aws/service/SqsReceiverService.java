@@ -92,7 +92,7 @@ public class SqsReceiverService {
 	            return false;
 	        }
 
-	        String category = GeneralUtility.makeNotNull(feedMsg.getCategory());
+	        String category = GeneralUtility.makeNotNull(feedMsg.getPreference());
 	        if (category.isEmpty()) {
 	            logger.info("Category is empty.");
 	            return false;
@@ -124,7 +124,7 @@ public class SqsReceiverService {
 
      HashMap<String, String> getTargetUsers(String category) {
     	 
-		HashMap<String, String> targetUsers = jsonReader.getAllTargetUsers(category);
+		HashMap<String, String> targetUsers = jsonReader.getUsersByPreferences(category);
 	   
 	    return targetUsers;
 	}
