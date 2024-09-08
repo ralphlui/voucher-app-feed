@@ -8,13 +8,16 @@ import lombok.Setter;
 public class Feed {
 	
 	private String feedId ="";
-	private String campaign="";
-	private String store ="";
+	private String campaignId="";
+	private String campaignDescription="";
+	private String storeId ="";
+	private String storeName="";
 	private String isDeleted = "0";
 	private String isReaded = "0";
 	private String readTime="";
-	private String targetUserName="";
-	private String targetUserEmail="";
+	private String userId="";
+	private String userName="";
+	private String email="";
 	private String createdDate="";
 	private String updatedDate="";
 	private String category="";

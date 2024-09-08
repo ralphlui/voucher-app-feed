@@ -8,9 +8,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.LiveFeed;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NotificationWebSocketHandler extends TextWebSocketHandler {
@@ -28,17 +29,27 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         try {
-        	
             String payload = message.getPayload();
-            Map<String, String> userEmailMap = objectMapper.readValue(payload, Map.class);
 
-            String userEmail = userEmailMap.get("email");
+            Map<String, Object> messageMap = objectMapper.readValue(payload, Map.class);
+            
+            Map<String, Object> dataMap = (Map<String, Object>) messageMap.get("data");
 
-            if (userEmail != null) {
-                activeSessions.put(userEmail, session);
-                logger.info("Registered session for user email: " + userEmail + " with session ID: " + session.getId());
+            if (dataMap != null) {
+               
+                session.getAttributes().put("userData", dataMap);
+
+                String userId = (String) dataMap.get("userID");
+
+                if (userId != null) {
+                    activeSessions.put(userId, session);
+                    logger.info("Stored user data,role and preferences, and registered session for userId: " + userId + " with session ID: " + session.getId());
+                } else {
+                    logger.warn("Received message without userId in the data field: " + payload);
+                    session.close(CloseStatus.BAD_DATA);
+                }
             } else {
-                logger.warn("Received message without userEmail: " + payload);
+                logger.warn("Received message without data field: " + payload);
                 session.close(CloseStatus.BAD_DATA);
             }
         } catch (Exception e) {
@@ -46,6 +57,8 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
             session.close(CloseStatus.SERVER_ERROR);
         }
     }
+
+
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
@@ -71,26 +84,21 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     
     public boolean broadcastToTargetedUsers(Feed feed) {
         boolean messageSent = false;
-        String targetUserEmail = feed.getTargetUserEmail();
-        
-        LiveFeed liveFeed = new LiveFeed();
-        liveFeed.setFeedId(feed.getFeedId());
-        liveFeed.setMessage(feed.getCampaign() + " campaign at " + feed.getStore());
-
+        String userId = feed.getUserId();
         try {
             ObjectMapper mapper = new ObjectMapper();
-            String jsonMsg = mapper.writeValueAsString(liveFeed);
+            String jsonMsg = mapper.writeValueAsString(feed);
             
-            // Check if the target user's email is in activeSessions map
-            WebSocketSession session = activeSessions.get(targetUserEmail);
+            // Check if the target user id is in activeSessions map
+            WebSocketSession session = activeSessions.get(userId);
             
             if (session != null && session.isOpen()) {
                 session.sendMessage(new TextMessage(jsonMsg));
                 messageSent = true;
-                logger.info("Live Feed sent to session for user email: " + targetUserEmail + 
+                logger.info("Live Feed sent to session for User Id: " + userId + 
                             " with session ID: " + session.getId());
             } else {
-                logger.info("No active session found for user email: " + targetUserEmail);
+                logger.info("No active session found for User Id: " + userId);
             }
             
         } catch (Exception e) {

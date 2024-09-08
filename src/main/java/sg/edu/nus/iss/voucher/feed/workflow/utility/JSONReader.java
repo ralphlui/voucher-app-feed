@@ -1,5 +1,6 @@
 package sg.edu.nus.iss.voucher.feed.workflow.utility;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.json.simple.JSONArray;
@@ -13,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import sg.edu.nus.iss.voucher.feed.workflow.api.connector.AuthAPICall;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.FeedEventPayload;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
+import voucher.management.app.auth.entity.User;
+import voucher.management.app.auth.enums.RoleType;
 
 @Component
 public class JSONReader {
@@ -26,40 +29,53 @@ public class JSONReader {
 
 	private static final Logger logger = LoggerFactory.getLogger(JSONReader.class);
 
-	public FeedEventPayload readFeedMessage(String message) {
-		FeedEventPayload feedMsg = new FeedEventPayload();
+	public MessagePayload readFeedMessage(String message) {
+		MessagePayload feedMsg = new MessagePayload();
 		try {
-			JSONObject jsonMessage = (JSONObject) new JSONParser().parse(message);
-			if (jsonMessage != null) {
-				String preference = jsonMessage.get("preference").toString();
-				String campaign = jsonMessage.get("campaign").toString();
-				JSONObject jsonObjCampaign = (JSONObject) new JSONParser().parse(campaign);
-				String campaignDescription = jsonObjCampaign.get("description").toString();
+			// Parse the SNS notification payload
+			JSONObject messageObject = (JSONObject) new JSONParser().parse(message);
+			if (messageObject != null) {
+				
+				String category = (String) messageObject.get("category");
 
-				String store = jsonMessage.get("store").toString();
-				JSONObject jsonObjStore = (JSONObject) new JSONParser().parse(store);
-				String storeName = jsonObjStore.get("name").toString();
+				JSONObject campaign = (JSONObject) messageObject.get("campaign");
+				String campaignId = (String) campaign.get("campaignId");
+				String campaignDescription = (String) campaign.get("description");
 
-				feedMsg.setPreference(GeneralUtility.makeNotNull(preference));
-				feedMsg.setCampaign(GeneralUtility.makeNotNull(campaignDescription));
-				feedMsg.setStore(GeneralUtility.makeNotNull(storeName));
+				JSONObject store = (JSONObject) messageObject.get("store");
+				String storeId = (String) store.get("storeId");
+				String storeName = (String) store.get("name");
+
+				// Log or process the data
+				logger.info("Category: " + category);
+				logger.info("Campaign ID: " + campaignId);
+				logger.info("Campaign Description: " + campaignDescription);
+				logger.info("Store ID: " + storeId);
+				logger.info("Store Name: " + storeName);
+				
+				feedMsg.setCategory(category);
+				feedMsg.setCampaignId(campaignId);
+				feedMsg.setCampaignDescription(campaignDescription);
+				feedMsg.setStoreId(storeId);
+				feedMsg.setStoreName(storeName);
 
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			logger.error("Updating Feed Status by feedId exception... {}", ex.toString());
+			logger.error("Read Feed Message exception... {}", ex.toString());
 		}
 		return feedMsg;
 	}
 
-	public HashMap<String, String> getUsersByPreferences(String preferences) {
-		int page = 1;
+	public ArrayList<User> getUsersByPreferences(String preferences) {
+		int page = 0;
 		int size = Integer.parseInt(pageMaxSize);
 		int totalRecord;
 
-		HashMap<String, String> targetUsers = new HashMap<String, String>();
+		ArrayList<User> targetUsers = new ArrayList<User>();
 		do {
 			String responseStr = apiCall.getUsersByPreferences(preferences, page, size);
+
 			try {
 
 				JSONParser parser = new JSONParser();
@@ -71,10 +87,17 @@ public class JSONReader {
 				for (Object obj : data) {
 					JSONObject user = (JSONObject) obj;
 					logger.info("User: " + user.toJSONString());
+					
+					String userId = GeneralUtility.makeNotNull(user.get("userID").toString());
 					String email = GeneralUtility.makeNotNull(user.get("email").toString());
 					String username = GeneralUtility.makeNotNull(user.get("username").toString());
-					if (!email.isEmpty()) {
-						targetUsers.put(email.trim(), username.trim());
+
+					if (!email.isEmpty() ) {
+						User targetUser = new User();
+						targetUser.setUserId(userId);
+						targetUser.setEmail(email);
+						targetUser.setUsername(username);
+						targetUsers.add(targetUser);
 					}
 				}
 
@@ -88,30 +111,5 @@ public class JSONReader {
 		return targetUsers;
 	}
 
-	public String getUserEmailById(String userId) {
-
-		String email = "";
-
-		String responseStr = apiCall.getUserById(userId);
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject jsonResponse = (JSONObject) parser.parse(responseStr);
-
-			JSONArray data = (JSONArray) jsonResponse.get("data");
-			for (Object obj : data) {
-				JSONObject user = (JSONObject) obj;
-				logger.info("User: " + user.toJSONString());
-				email = GeneralUtility.makeNotNull(user.get("email").toString());
-
-			}
-		} catch (ParseException e) {
-			e.printStackTrace();
-			logger.error("Error parsing JSON response... {}", e.toString());
-
-		}
-
-		return email;
-	}
 
 }

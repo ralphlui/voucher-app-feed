@@ -47,30 +47,31 @@ public class FeedDAO {
     }
 
 
-
 	final String FEEDID = "FeedId";
-	final String CAMPAIGN = "Campaign";
-	final String STORE = "Store";
+	final String CAMPAIGNID="CampaignId";
+	final String STOREID = "StoreId";
 	final String ISDELETED = "IsDeleted";
 	final String ISREADED = "IsReaded";
 	final String READTIME = "ReadTime";
-	final String TARGETUSEREMAIL = "TargetUserEmail";
-	final String TARGETUSERENAME = "TargetUserName";
+	final String USERID = "UserId";
+	final String EMAIL = "Email";
+	final String USERNAME = "UserName";
 	final String CREATEDDATE = "CreatedDate";
+	final String CATEGORY ="Category";
 
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); 
 
-	public List<Feed> getAllFeedByEmail(String targetedUserId, int page, int size) {
+	public List<Feed> getAllFeedByUserId(String targetedUserId, int page, int size) {
 		List<Feed> feedList = new ArrayList<>();
 
 		try {
 			Table table = dynamoDB.getTable(feedTbl);
 
-			NameMap nameMap = new NameMap().with("#TargetUserEmail", TARGETUSEREMAIL).with("#IsDeleted", ISDELETED);
-			ValueMap valueMap = new ValueMap().withString(":TargetUserEmail", targetedUserId).withString(":IsDeleted",
+			NameMap nameMap = new NameMap().with("#UserId", USERID).with("#IsDeleted", ISDELETED);
+			ValueMap valueMap = new ValueMap().withString(":UserId", targetedUserId).withString(":IsDeleted",
 					"0");
 
-			String query = "#TargetUserEmail = :TargetUserEmail AND #IsDeleted = :IsDeleted";
+			String query = "#UserId = :UserId AND #IsDeleted = :IsDeleted";
 			ScanSpec scanSpec = new ScanSpec().withFilterExpression(query).withNameMap(nameMap).withValueMap(valueMap)
 					.withMaxResultSize(size);
 			ItemCollection<ScanOutcome> items = table.scan(scanSpec);
@@ -81,14 +82,16 @@ public class FeedDAO {
 				Item item = iterator.next();
 				Feed feed = new Feed();
 				feed.setFeedId(item.getString(FEEDID));
-				feed.setCampaign(item.getString(CAMPAIGN));
-				feed.setStore(item.getString(STORE));
-				feed.setTargetUserEmail(item.getString(TARGETUSEREMAIL));
-				feed.setTargetUserName(item.getString(TARGETUSERENAME));
+				feed.setCampaignId(item.getString(CAMPAIGNID));
+				feed.setStoreId(item.getString(STOREID));
+				feed.setUserId(item.getString(USERID));
+				feed.setEmail(item.getString(EMAIL));
+				feed.setUserName(item.getString(USERNAME));
 				feed.setIsDeleted(item.getString(ISDELETED));
 				feed.setIsReaded(item.getString(ISREADED));
 				feed.setReadTime(item.getString(READTIME));
 				feed.setCreatedDate(item.getString(CREATEDDATE));
+				feed.setCategory(item.getString(CATEGORY));
 				feedList.add(feed);
 			}
 
@@ -123,10 +126,12 @@ public class FeedDAO {
 	        if (item != null && !item.isEmpty()) {
 	            feed = new Feed();
 	            feed.setFeedId(GeneralUtility.makeNotNull(item.get(FEEDID).getS()));
-	            feed.setCampaign(GeneralUtility.makeNotNull(item.get(CAMPAIGN).getS()));
-	            feed.setStore(GeneralUtility.makeNotNull(item.get(STORE).getS()));
-	            feed.setTargetUserName(GeneralUtility.makeNotNull(item.get(TARGETUSERENAME).getS()));
-	            feed.setTargetUserEmail(GeneralUtility.makeNotNull(item.get(TARGETUSEREMAIL).getS()));
+	            feed.setCampaignId(GeneralUtility.makeNotNull(item.get(CAMPAIGNID).getS()));
+	            feed.setStoreId(GeneralUtility.makeNotNull(item.get(STOREID).getS()));
+	            feed.setUserName(GeneralUtility.makeNotNull(item.get(USERNAME).getS()));
+	            feed.setEmail(GeneralUtility.makeNotNull(item.get(EMAIL).getS()));
+	            feed.setUserId(GeneralUtility.makeNotNull(item.get(USERID).getS()));
+	            feed.setCategory(GeneralUtility.makeNotNull(item.get(CATEGORY).getS()));
 	            feed.setIsDeleted(GeneralUtility.makeNotNull(item.get(ISDELETED).getS()));
 	            feed.setIsReaded(GeneralUtility.makeNotNull(item.get(ISREADED).getS()));
 	            feed.setReadTime(GeneralUtility.makeNotNull(item.get(READTIME).getS()));
@@ -168,11 +173,13 @@ public class FeedDAO {
 			 
 			 PutItemOutcome outCome = table.putItem(new Item().withPrimaryKey(FEEDID, feed.getFeedId())
 					 .with(CREATEDDATE, feed.getCreatedDate())
-					 .with(TARGETUSEREMAIL, feed.getTargetUserEmail())
-					 .with(TARGETUSERENAME, feed.getTargetUserName())
+					 .with(USERID, feed.getUserId())
+					 .with(EMAIL, feed.getEmail())
+					 .with(USERNAME, feed.getUserName())
 					 .with(ISDELETED,"0").with(ISREADED, "0")
-					 .with(CAMPAIGN, feed.getCampaign())
-					 .with(STORE, feed.getStore())
+					 .with(CAMPAIGNID, feed.getCampaignId())
+					 .with(STOREID, feed.getStoreId())
+					 .with(CATEGORY, feed.getCategory())
 					 .with(READTIME, ""));
 			 
 			
@@ -184,6 +191,42 @@ public class FeedDAO {
 	    }
 		return addedFeed;
 		
+	}
+	
+	public boolean checkFeedExistsByUserAndCampaign(String userId,String campaignId) {
+		boolean isExists = false;
+
+	    try {
+	        Table table = dynamoDB.getTable(feedTbl);
+
+	        NameMap nameMap = new NameMap()
+	            .with("#UserId", USERID)
+	            .with("#CampaignId", CAMPAIGNID)
+	            .with("#IsDeleted", ISDELETED);
+	        
+	        ValueMap valueMap = new ValueMap()
+	            .withString(":UserId", userId)
+	            .withString(":CampaignId", campaignId)
+	            .withString(":IsDeleted", "0");
+
+	        String filterExpression = "#UserId = :UserId AND #CampaignId = :CampaignId AND #IsDeleted = :IsDeleted";
+
+	        ScanSpec scanSpec = new ScanSpec()
+	            .withFilterExpression(filterExpression)
+	            .withNameMap(nameMap)
+	            .withValueMap(valueMap);
+
+	        ItemCollection<ScanOutcome> items = table.scan(scanSpec);
+
+	        if (items.iterator().hasNext()) {
+	            isExists = true;
+	        }
+
+	    } catch (Exception ex) {
+	        logger.error("Error while checking feed existence for userId: {} and campaignId: {}. Exception: {}", userId, campaignId, ex.toString());
+	    }
+
+	    return isExists;
 	}
 	
 }

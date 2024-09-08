@@ -15,9 +15,9 @@ import com.amazonaws.services.simpleemail.model.Message;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 
 @Service
-public class SesSenderService {
+public class SESSenderService {
 
-	private static final Logger logger = LoggerFactory.getLogger(SesSenderService.class);
+	private static final Logger logger = LoggerFactory.getLogger(SESSenderService.class);
 
 	@Autowired
 	private AmazonSimpleEmailService sesClient;

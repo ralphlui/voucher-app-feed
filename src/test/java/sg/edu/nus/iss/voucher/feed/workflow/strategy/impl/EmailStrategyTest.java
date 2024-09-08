@@ -9,7 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SesSenderService;
+import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SESSenderService;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,7 +23,7 @@ import java.util.Arrays;
 public class EmailStrategyTest {
 
     @Mock
-    private SesSenderService sesSenderService;
+    private SESSenderService sesSenderService;
 
     @InjectMocks
     private EmailStrategy emailStrategy;
@@ -37,10 +38,12 @@ public class EmailStrategyTest {
     void testSendNotification() throws Exception {
        
         Feed feed = new Feed();
-        feed.setCampaign("Mid-Autumn");
-        feed.setTargetUserName("John");
-        feed.setTargetUserEmail("john@example.com");
-        feed.setStore("SuperMart");
+        feed.setCampaignId("123");
+        feed.setCampaignDescription("Mid-Autumn Sale");
+        feed.setUserId("111");
+        feed.setUserName("Eleven");
+        feed.setEmail("eleven.11@gmail.com");
+        feed.setStoreName("SuperMart");
 
         when(sesSenderService.sendEmail(anyString(), anyList(), anyString(), anyString())).thenReturn(true);
 

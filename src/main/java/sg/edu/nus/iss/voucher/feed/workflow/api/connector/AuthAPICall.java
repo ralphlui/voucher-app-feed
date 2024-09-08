@@ -32,8 +32,8 @@ public class AuthAPICall {
 	    CloseableHttpClient httpClient = HttpClients.createDefault();
 	    try {
 	    	String encodedPreferences = URLEncoder.encode(preferences.trim(), StandardCharsets.UTF_8.toString()).trim();
-	        String url = authURL.trim() + "/users/preferences/" + encodedPreferences + "?page=" + page + "&size=" + size;
-	        logger.info("getTargetUsers url : " + url);
+	        String url = authURL.trim() + "/api/users/preferences/" + encodedPreferences + "?page=" + page + "&size=" + size;
+	        logger.info("getUsersByPreferences url : " + url);
 	        RequestConfig config = RequestConfig.custom()
 	                .setConnectTimeout(30000)
 	                .setConnectionRequestTimeout(30000)
@@ -45,60 +45,23 @@ public class AuthAPICall {
 	        try {
 	            byte[] responseByteArray = EntityUtils.toByteArray(httpResponse.getEntity());
 	            responseStr = new String(responseByteArray, Charset.forName("UTF-8"));
-	            logger.info("getTargetUsers: " + responseStr);
+	            logger.info("getUsersByPreferences: " + responseStr);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            logger.error("getTargetUsers exception... {}", e.toString());
+	            logger.error("getUsersByPreferences exception... {}", e.toString());
 	        } finally {
 	            try {
 	                httpResponse.close();
 	            } catch (IOException e) {
 	                e.printStackTrace();
-	                logger.error("getTargetUsers exception... {}", e.toString());
+	                logger.error("getUsersByPreferences exception... {}", e.toString());
 	            }
 	        }
 	    } catch (Exception ex) {
 	        ex.printStackTrace();
-	        logger.error("getTargetUsers exception... {}", ex.toString());
+	        logger.error("getUsersByPreferences exception... {}", ex.toString());
 	    }
 	    return responseStr;
 	}
-	
-	public String getUserById(String userId) {
-	    String responseStr = "";
-	    CloseableHttpClient httpClient = HttpClients.createDefault();
-	    try {
-	        String url = authURL.trim() + "/users/" + userId.trim() +"/active" ;
-	        logger.info("getUserById url : " + url);
-	        RequestConfig config = RequestConfig.custom()
-	                .setConnectTimeout(30000)
-	                .setConnectionRequestTimeout(30000)
-	                .setSocketTimeout(30000)
-	                .build();
-	        httpClient = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
-	        HttpGet request = new HttpGet(url);
-	        CloseableHttpResponse httpResponse = httpClient.execute(request);
-	        try {
-	            byte[] responseByteArray = EntityUtils.toByteArray(httpResponse.getEntity());
-	            responseStr = new String(responseByteArray, Charset.forName("UTF-8"));
-	            logger.info("getUserById: " + responseStr);
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            logger.error("getUserById exception... {}", e.toString());
-	        } finally {
-	            try {
-	                httpResponse.close();
-	            } catch (IOException e) {
-	                e.printStackTrace();
-	                logger.error("getUserById exception... {}", e.toString());
-	            }
-	        }
-	    } catch (Exception ex) {
-	        ex.printStackTrace();
-	        logger.error("getUserById exception... {}", ex.toString());
-	    }
-	    return responseStr;
-	}
-	
 	
 }

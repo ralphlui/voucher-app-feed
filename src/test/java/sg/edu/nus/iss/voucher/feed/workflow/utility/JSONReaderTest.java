@@ -1,6 +1,7 @@
 package sg.edu.nus.iss.voucher.feed.workflow.utility;
 
-import org.json.simple.parser.ParseException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -10,9 +11,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import sg.edu.nus.iss.voucher.feed.workflow.api.connector.AuthAPICall;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.FeedEventPayload;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
+import voucher.management.app.auth.entity.User;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -35,28 +37,74 @@ public class JSONReaderTest {
 
     @Test
     public void testReadFeedMessage() {
-        String message = "{\"preference\":\"testPreference\",\"campaign\":\"{\\\"description\\\":\\\"testCampaign\\\"}\",\"store\":\"{\\\"name\\\":\\\"testStore\\\"}\"}";
+    	JSONObject campaign = new JSONObject();
+        campaign.put("campaignId", "123");
+        campaign.put("description", "Happy Hour");
 
-        FeedEventPayload result = jsonReader.readFeedMessage(message);
+        JSONObject store = new JSONObject();
+        store.put("storeId", "456");
+        store.put("name", "MUJI");
+
+        JSONObject message = new JSONObject();
+        message.put("category", "Food");
+        message.put("campaign", campaign);
+        message.put("store", store);
+
+        String messageString = message.toString();
+        MessagePayload result = jsonReader.readFeedMessage(messageString);
 
         assertNotNull(result);
-        assertEquals("testPreference", result.getPreference());
-        assertEquals("testCampaign", result.getCampaign());
-        assertEquals("testStore", result.getStore());
+        assertEquals("Food", result.getCategory(), "Category mismatch");
+        assertEquals("123", result.getCampaignId(), "Campaign ID mismatch");
+        assertEquals("Happy Hour", result.getCampaignDescription(), "Campaign description mismatch");
+        assertEquals("456", result.getStoreId(), "Store ID mismatch");
+        assertEquals("MUJI", result.getStoreName(), "Store name mismatch");
+    
     }
-
+    
     @Test
-    public void testGetAllTargetUsers() throws ParseException {
-        String mockResponse = "{\"totalRecord\":2,\"data\":[{\"email\":\"test1@example.com\",\"username\":\"user1\"},{\"email\":\"test2@example.com\",\"username\":\"user2\"}]}";
+    public void testGetAllTargetUsers() throws Exception {
+        // Prepare mock responses
+        JSONObject page1Response = new JSONObject();
+        page1Response.put("totalRecord", 5L);
+        JSONArray dataArrayPage1 = new JSONArray();
 
-        when(apiCall.getUsersByPreferences(anyString(), anyInt(), anyInt())).thenReturn(mockResponse);
+        // Create user objects for page 1
+        JSONObject user1 = new JSONObject();
+        user1.put("userID", "1");
+        user1.put("email", "user1@example.com");
+        user1.put("username", "User One");
 
-        HashMap<String, String> result = jsonReader.getUsersByPreferences("testPreference");
+        JSONObject user2 = new JSONObject();
+        user2.put("userID", "2");
+        user2.put("email", "user2@example.com");
+        user2.put("username", "User Two");
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("user1", result.get("test1@example.com"));
-        assertEquals("user2", result.get("test2@example.com"));
+        dataArrayPage1.add(user1);
+        dataArrayPage1.add(user2);
+        page1Response.put("data", dataArrayPage1);
+
+
+        when(apiCall.getUsersByPreferences(eq("Food"), eq(0), anyInt())).thenReturn(page1Response.toString());
+       
+        ArrayList<User> users = jsonReader.getUsersByPreferences("Food");
+
+        assertEquals(2, users.size(), "The number of users returned should be 2");
+
+        User firstUser = users.get(0);
+        assertEquals("1", firstUser.getUserId());
+        assertEquals("user1@example.com", firstUser.getEmail());
+        assertEquals("User One", firstUser.getUsername());
+
+        User secondUser = users.get(1);
+        assertEquals("2", secondUser.getUserId());
+        assertEquals("user2@example.com", secondUser.getEmail());
+        assertEquals("User Two", secondUser.getUsername());
+
+      
+        verify(apiCall).getUsersByPreferences(eq("Food"), eq(0), anyInt());
     }
+
+
 
 }

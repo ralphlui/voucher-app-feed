@@ -10,14 +10,16 @@ public class DTOMapper {
 
 	public static FeedDTO toFeedDTO(Feed feed) {
 		FeedDTO feedDTO = new FeedDTO();
-		feedDTO.setCampaign(feed.getCampaign());
-		feedDTO.setStore(feed.getStore());
+		feedDTO.setCampaignId(feed.getCampaignId());
+		feedDTO.setStoreId(feed.getStoreId());
 		feedDTO.setFeedId(feed.getFeedId());
 		feedDTO.setIsReaded(feed.getIsReaded());
 		feedDTO.setReadTime(feed.getReadTime());
-		feedDTO.setTargetUserEmail(feed.getTargetUserEmail());
-		feedDTO.setTargetUserName(feed.getTargetUserName());
+		feedDTO.setUserId(feed.getUserId());
+		feedDTO.setUserName(feed.getUserName());
+		feedDTO.setEmail(feed.getEmail());
         feedDTO.setCreatedDate(feed.getCreatedDate());
+        feedDTO.setCategory(feed.getCategory());
 		return feedDTO;
 	}
 

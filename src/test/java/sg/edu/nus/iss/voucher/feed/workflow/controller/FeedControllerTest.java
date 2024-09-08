@@ -43,9 +43,10 @@ public class FeedControllerTest {
     static void setUp() {
         feedDTO = new FeedDTO(); 
         feedDTO.setFeedId("123");
-        feedDTO.setCampaign("Mid-Autumn");
-        feedDTO.setTargetUserEmail("test@gmail.com");
-        feedDTO.setTargetUserName("Test");
+        feedDTO.setUserId("111");
+        feedDTO.setUserName("Eleven");
+        feedDTO.setEmail("eleven.11@gmail.com");
+        feedDTO.setUserName("Test");
         
     }
 

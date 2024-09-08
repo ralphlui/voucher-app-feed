@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SesSenderService;
+import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SESSenderService;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.IFeedStrategy;
 
@@ -19,7 +19,7 @@ public class EmailStrategy implements IFeedStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(EmailStrategy.class);
 
 	@Autowired
-	private SesSenderService sesSenderService;
+	private SESSenderService sesSenderService;
 
 	@Value("${aws.ses.from}") String emailFrom;
 
@@ -34,7 +34,7 @@ public class EmailStrategy implements IFeedStrategy {
 			logger.info("campaignURL... {}", campaignURL);
 
 			String subject = "Explore Our Exciting [[campaign]] Campaign" ;
-			subject = subject.replace("[[campaign]]", feed.getCampaign());
+			subject = subject.replace("[[campaign]]", feed.getCampaignDescription());
 			
 			String body = "Dear [[name]],<br><br>" 
 					+ "You’re invited to join us for a special event at [[store]]<br><br>" 
@@ -44,15 +44,15 @@ public class EmailStrategy implements IFeedStrategy {
 					+ "Thank you for being a valued customer." + "<br><br>"
 					+ "<i>(This is an auto-generated email, please do not reply)</i>";
 
-			body = body.replace("[[name]]", feed.getTargetUserName());
-			body = body.replace("[[store]]", feed.getStore());
-			body = body.replace("[[campaign]]", feed.getCampaign());
+			body = body.replace("[[name]]", feed.getUserName());
+			body = body.replace("[[store]]", feed.getStoreName());
+			body = body.replace("[[campaign]]", feed.getCampaignDescription());
 			body = body.replace("[[URL]]", campaignURL);
 			
 
-			boolean isSend = sesSenderService.sendEmail(emailFrom, Arrays.asList(feed.getTargetUserEmail()), subject, body);
-			logger.info("Email notification for Campaign id: " + feed.getCampaign() + " sent to user "
-					+ feed.getTargetUserEmail() + ".");
+			boolean isSend = sesSenderService.sendEmail(emailFrom, Arrays.asList(feed.getEmail()), subject, body);
+			logger.info("Email notification for Campaign id: " + feed.getCampaignDescription() + " sent to user "
+					+ feed.getEmail() + ".");
 			return isSend;
 			
 

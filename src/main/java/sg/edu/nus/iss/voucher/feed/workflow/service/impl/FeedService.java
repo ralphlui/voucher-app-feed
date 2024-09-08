@@ -29,9 +29,6 @@ public class FeedService implements IFeedService {
 	}
 
 	@Autowired
-	private EncryptionUtils encryptionUtils;
-
-	@Autowired
 	private JSONReader jsonReader;
 
 	@Override
@@ -41,19 +38,16 @@ public class FeedService implements IFeedService {
 		Map<Long, List<FeedDTO>> result = new HashMap<>();
 		List<FeedDTO> feedDTOList = new ArrayList<FeedDTO>();
 		try {
-			String email = GeneralUtility.makeNotNull(jsonReader.getUserEmailById(userId));
 
-			logger.info("email: " + email);
-			if (!email.equals("")) {
-				String encodedUserEmail = encryptionUtils.encrypt(email);
-				logger.info("encodedTargetedUserEmail {},...", encodedUserEmail);
-
-				List<Feed> feeds = feedDao.getAllFeedByEmail(encodedUserEmail, page, size);
+			logger.info("userId: " + userId);
+			if (!userId.equals("")) {
+				
+				List<Feed> feeds = feedDao.getAllFeedByUserId(userId, page, size);
 				long totalRecord = feeds.size();
 				if (totalRecord > 0) {
 					logger.info("Found {}, converting to Feed DTOs...", totalRecord);
 					for (Feed feed : feeds) {
-						feed.setTargetUserEmail(encryptionUtils.decrypt(feed.getTargetUserEmail()));
+						
 						FeedDTO feedDTO = DTOMapper.toFeedDTO(feed);
 						feedDTOList.add(feedDTO);
 					}
@@ -78,7 +72,6 @@ public class FeedService implements IFeedService {
 			Feed feed = feedDao.findById(feedId);
 
 			if (feed != null && feed.getFeedId() != null && !feed.getFeedId().isEmpty()) {
-				feed.setTargetUserEmail(encryptionUtils.decrypt(feed.getTargetUserEmail()));
 				feedDTO = DTOMapper.toFeedDTO(feed);
 			} else {
 				logger.info("Feed not found for feedId {}...", feedId);
@@ -98,7 +91,6 @@ public class FeedService implements IFeedService {
 				boolean success = feedDao.upateReadStatus(feedId);
 				if (success) {
 					Feed updatedFeed = feedDao.findById(feedId);
-					updatedFeed.setTargetUserEmail(encryptionUtils.decrypt(updatedFeed.getTargetUserEmail()));
 					feedDTO = DTOMapper.toFeedDTO(updatedFeed);
 				} else {
 					logger.info("Feed read status update failed for feedId {}...", feedId);

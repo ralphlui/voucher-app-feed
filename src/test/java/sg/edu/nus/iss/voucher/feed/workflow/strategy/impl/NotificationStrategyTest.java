@@ -27,10 +27,12 @@ class NotificationStrategyTest {
     @Test
     void testSendNotification() {
     	Feed feed = new Feed();
-        feed.setCampaign("Mid-Autumn Sale");
-        feed.setTargetUserName("John");
-        feed.setTargetUserEmail("john@example.com");
-        feed.setStore("SuperMart");
+    	feed.setCampaignId("123");
+        feed.setCampaignDescription("Mid-Autumn Sale");
+        feed.setUserId("111");
+        feed.setUserName("Eleven");
+        feed.setEmail("eleven.11@gmail.com");
+        feed.setStoreName("SuperMart");
         when(webSocketHandler.broadcastToTargetedUsers(feed)).thenReturn(true);
 
         boolean result = notificationStrategy.sendNotification(feed);
