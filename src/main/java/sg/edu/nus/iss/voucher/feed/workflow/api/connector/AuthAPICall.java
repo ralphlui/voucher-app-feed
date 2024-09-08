@@ -32,7 +32,7 @@ public class AuthAPICall {
 	    CloseableHttpClient httpClient = HttpClients.createDefault();
 	    try {
 	    	String encodedPreferences = URLEncoder.encode(preferences.trim(), StandardCharsets.UTF_8.toString()).trim();
-	        String url = authURL.trim() + "/api/users/preferences/" + encodedPreferences + "?page=" + page + "&size=" + size;
+	        String url = authURL.trim() + "/preferences/" + encodedPreferences + "?page=" + page + "&size=" + size;
 	        logger.info("getUsersByPreferences url : " + url);
 	        RequestConfig config = RequestConfig.custom()
 	                .setConnectTimeout(30000)
