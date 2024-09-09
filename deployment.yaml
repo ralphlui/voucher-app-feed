@@ -39,6 +39,11 @@ spec:
                 configMapKeyRef:
                   name: my-configmap
                   key: AUTH_URL
+            - name: FRONTEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: my-configmap
+                  key: FRONTEND_URL
 
 ---
 apiVersion: v1
