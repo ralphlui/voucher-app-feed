@@ -19,9 +19,10 @@ import org.springframework.web.client.RestTemplate;
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.TargetUser;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.*;
 import sg.edu.nus.iss.voucher.feed.workflow.utility.JSONReader;
-import voucher.management.app.auth.entity.User;
+
 
 public class SNSSubscriptionServiceTest {
 
@@ -69,8 +70,8 @@ public class SNSSubscriptionServiceTest {
         feedMsg.setStoreId("StoreId");
         feedMsg.setStoreName("StoreName");
 
-        ArrayList<User> users = new ArrayList<>();
-        User user = new User();
+        ArrayList<TargetUser> users = new ArrayList<>();
+        TargetUser user = new TargetUser();
         user.setUserId("11");
         user.setEmail("eleven.11@gmail.com");
         user.setUsername("User 11");

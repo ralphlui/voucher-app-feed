@@ -12,13 +12,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.*;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.EmailStrategy;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.NotificationStrategy;
-import sg.edu.nus.iss.voucher.feed.workflow.utility.GeneralUtility;
-import sg.edu.nus.iss.voucher.feed.workflow.utility.JSONReader;
-import voucher.management.app.auth.entity.User;
+import sg.edu.nus.iss.voucher.feed.workflow.utility.*;
 
 @Service
 public class SNSSubscriptionService {
@@ -75,7 +72,7 @@ public class SNSSubscriptionService {
 				return retMsg = "Bad Request:Category is empty.";
 			}
 
-			ArrayList<User> targetUsers = getTargetUsers(category);
+			ArrayList<TargetUser> targetUsers = getTargetUsers(category);
 			if (targetUsers.isEmpty()) {
 				logger.warn("No users found for the category: {}", category);
 				return retMsg = "Bad Request:No users found for the category: " + category;
@@ -83,7 +80,7 @@ public class SNSSubscriptionService {
 
 			logger.info("Processing target users: {}", targetUsers);
 			retMsg = "Processed user:\n";
-			for (User targetUser : targetUsers) {
+			for (TargetUser targetUser : targetUsers) {
 				boolean processed = processTargetUser(targetUser, feedMsg);
 				logger.info("Processed user: {} with result: {}", targetUser.getUserId(), processed);
 				retMsg += targetUser.getUserId() + ":" + processed + "\n";
@@ -96,13 +93,13 @@ public class SNSSubscriptionService {
 		return retMsg;
 	}
 
-	ArrayList<User> getTargetUsers(String category) {
+	ArrayList<TargetUser> getTargetUsers(String category) {
 
-		ArrayList<User> targetUsers = jsonReader.getUsersByPreferences(category);
+		ArrayList<TargetUser> targetUsers = jsonReader.getUsersByPreferences(category);
 		return targetUsers;
 	}
 
-	private boolean processTargetUser(User targetUser, MessagePayload feedMsg) {
+	private boolean processTargetUser(TargetUser targetUser, MessagePayload feedMsg) {
 
 		try {
 			String userId = GeneralUtility.makeNotNull(targetUser.getUserId()).trim();
@@ -136,7 +133,7 @@ public class SNSSubscriptionService {
 		return false;
 	}
 
-	private Feed createFeed(MessagePayload feedMsg, User targetUser) throws Exception {
+	private Feed createFeed(MessagePayload feedMsg, TargetUser targetUser) throws Exception {
 
 		Feed feed = new Feed();
 		feed.setUserId(targetUser.getUserId());

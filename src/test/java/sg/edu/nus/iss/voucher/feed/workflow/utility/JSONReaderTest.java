@@ -9,13 +9,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
 import sg.edu.nus.iss.voucher.feed.workflow.api.connector.AuthAPICall;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
-import voucher.management.app.auth.entity.User;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.TargetUser;
 
 import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -87,16 +85,16 @@ public class JSONReaderTest {
 
         when(apiCall.getUsersByPreferences(eq("Food"), eq(0), anyInt())).thenReturn(page1Response.toString());
        
-        ArrayList<User> users = jsonReader.getUsersByPreferences("Food");
+        ArrayList<TargetUser> users = jsonReader.getUsersByPreferences("Food");
 
         assertEquals(2, users.size(), "The number of users returned should be 2");
 
-        User firstUser = users.get(0);
+        TargetUser firstUser = users.get(0);
         assertEquals("1", firstUser.getUserId());
         assertEquals("user1@example.com", firstUser.getEmail());
         assertEquals("User One", firstUser.getUsername());
 
-        User secondUser = users.get(1);
+        TargetUser secondUser = users.get(1);
         assertEquals("2", secondUser.getUserId());
         assertEquals("user2@example.com", secondUser.getEmail());
         assertEquals("User Two", secondUser.getUsername());

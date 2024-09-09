@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import sg.edu.nus.iss.voucher.feed.workflow.api.connector.AuthAPICall;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
-import voucher.management.app.auth.entity.User;
-import voucher.management.app.auth.enums.RoleType;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.TargetUser;
 
 @Component
 public class JSONReader {
@@ -67,12 +67,12 @@ public class JSONReader {
 		return feedMsg;
 	}
 
-	public ArrayList<User> getUsersByPreferences(String preferences) {
+	public ArrayList<TargetUser> getUsersByPreferences(String preferences) {
 		int page = 0;
 		int size = Integer.parseInt(pageMaxSize);
 		int totalRecord;
 
-		ArrayList<User> targetUsers = new ArrayList<User>();
+		ArrayList<TargetUser> targetUsers = new ArrayList<TargetUser>();
 		do {
 			String responseStr = apiCall.getUsersByPreferences(preferences, page, size);
 
@@ -93,7 +93,7 @@ public class JSONReader {
 					String username = GeneralUtility.makeNotNull(user.get("username").toString());
 
 					if (!email.isEmpty() ) {
-						User targetUser = new User();
+						TargetUser targetUser = new TargetUser();
 						targetUser.setUserId(userId);
 						targetUser.setEmail(email);
 						targetUser.setUsername(username);
