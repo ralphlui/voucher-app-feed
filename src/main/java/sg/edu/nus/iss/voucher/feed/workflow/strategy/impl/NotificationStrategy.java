@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.IFeedStrategy;
 import sg.edu.nus.iss.voucher.feed.workflow.websocket.handler.NotificationWebSocketHandler;
@@ -23,10 +24,10 @@ public class NotificationStrategy implements IFeedStrategy {
 	}
 
 	@Override
-	public boolean sendNotification(Feed feed) {
+	public boolean sendNotification(LiveFeedDTO liveFeedDTO) {
 		boolean messageSent = false;
 		try {
-			 messageSent = webSocketHandler.broadcastToTargetedUsers(feed);
+			 messageSent = webSocketHandler.broadcastToTargetedUsers(liveFeedDTO);
 		} catch (Exception e) {
 			logger.error("Error occurred while sendLiveNotification {} ...", e.toString());
 			e.printStackTrace();

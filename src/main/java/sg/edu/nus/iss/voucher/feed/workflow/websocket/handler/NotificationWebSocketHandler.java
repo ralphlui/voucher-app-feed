@@ -7,11 +7,12 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Arrays;
 import java.util.Map;
 
 public class NotificationWebSocketHandler extends TextWebSocketHandler {
@@ -19,62 +20,50 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(NotificationWebSocketHandler.class);
 
     final Map<String, WebSocketSession> activeSessions = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
+    
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    	try {
+    	 String query = session.getUri().getQuery();
+         Map<String, String> queryParams = getQueryParams(query);
+         String userId = queryParams.get("userId");
+         if (userId != null) {
+             activeSessions.put(userId, session);
+             logger.info("Stored user Id and registered session for userId: " + userId + " with session ID: " + session.getId());
+         } else {
+             logger.warn("Received message without userId in the header: " + query);
+             session.close(CloseStatus.BAD_DATA);
+         }
+         
         logger.info("Connection established with session ID: " + session.getId());
+    	 } catch (Exception e) {
+             logger.error("Error processing message: " + e.getMessage(), e);
+             session.close(CloseStatus.SERVER_ERROR);
+         }
     }
-
-    @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        try {
-            String payload = message.getPayload();
-
-            Map<String, Object> messageMap = objectMapper.readValue(payload, Map.class);
-            
-            Map<String, Object> dataMap = (Map<String, Object>) messageMap.get("data");
-
-            if (dataMap != null) {
-               
-                session.getAttributes().put("userData", dataMap);
-
-                String userId = (String) dataMap.get("userID");
-
-                if (userId != null) {
-                    activeSessions.put(userId, session);
-                    logger.info("Stored user data,role and preferences, and registered session for userId: " + userId + " with session ID: " + session.getId());
-                } else {
-                    logger.warn("Received message without userId in the data field: " + payload);
-                    session.close(CloseStatus.BAD_DATA);
-                }
-            } else {
-                logger.warn("Received message without data field: " + payload);
-                session.close(CloseStatus.BAD_DATA);
-            }
-        } catch (Exception e) {
-            logger.error("Error processing message: " + e.getMessage(), e);
-            session.close(CloseStatus.SERVER_ERROR);
-        }
+    
+    private Map<String, String> getQueryParams(String query) {
+        return Arrays.stream(query.split("&"))
+                .map(param -> param.split("="))
+                .collect(Collectors.toMap(kv -> kv[0], kv -> kv[1]));
     }
-
 
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-        String disconnectedEmail = null;
+        String disconnectedUserId = null;
 
         
         for (Map.Entry<String, WebSocketSession> entry : activeSessions.entrySet()) {
             if (entry.getValue().equals(session)) {
-                disconnectedEmail = entry.getKey();
+            	disconnectedUserId = entry.getKey();
                 break;
             }
         }
 
-        if (disconnectedEmail != null) {
-            activeSessions.remove(disconnectedEmail);
-            logger.info("Connection closed for email: " + disconnectedEmail + " with session ID: " + session.getId());
+        if (disconnectedUserId != null) {
+            activeSessions.remove(disconnectedUserId);
+            logger.info("Connection closed for userId: " + disconnectedUserId + " with session ID: " + session.getId());
         } else {
             logger.warn("Session ID: " + session.getId() + " not found in activeSessions.");
         }
@@ -82,12 +71,12 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
 
     
     
-    public boolean broadcastToTargetedUsers(Feed feed) {
+    public boolean broadcastToTargetedUsers(LiveFeedDTO liveFeedDTO) {
         boolean messageSent = false;
-        String userId = feed.getUserId();
+        String userId = liveFeedDTO.getUserId();
         try {
             ObjectMapper mapper = new ObjectMapper();
-            String jsonMsg = mapper.writeValueAsString(feed);
+            String jsonMsg = mapper.writeValueAsString(liveFeedDTO);
             
             // Check if the target user id is in activeSessions map
             WebSocketSession session = activeSessions.get(userId);

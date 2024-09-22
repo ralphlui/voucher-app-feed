@@ -3,6 +3,7 @@ package sg.edu.nus.iss.voucher.feed.workflow.utility;
 import org.springframework.stereotype.Component;
 
 import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 
 @Component
@@ -23,4 +24,16 @@ public class DTOMapper {
 		return feedDTO;
 	}
 
+	public static LiveFeedDTO toLiveFeedDTO(Feed feed) {
+		LiveFeedDTO liveFeedDTO = new LiveFeedDTO();
+		liveFeedDTO.setFeedId(feed.getFeedId());
+		liveFeedDTO.setUserId(feed.getUserId());
+		liveFeedDTO.setUserName(feed.getUserName());
+		liveFeedDTO.setEmail(feed.getEmail());
+		liveFeedDTO.setCampaignId(feed.getCampaignId());
+		liveFeedDTO.setCampaignDescription(feed.getCampaignDescription());
+		liveFeedDTO.setStoreId(feed.getStoreId());
+		liveFeedDTO.setStoreName(feed.getStoreName());
+		return liveFeedDTO;
+	}
 }

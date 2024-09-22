@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.*;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.EmailStrategy;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.NotificationStrategy;
@@ -36,17 +37,24 @@ public class SNSSubscriptionService {
 
 	public void confirmSubscription(String snsMessage) {
 		try {
-			JsonNode jsonNode = new ObjectMapper().readTree(snsMessage);
-			String subscribeURL = jsonNode.get("SubscribeURL").asText();
+	        JsonNode jsonNode = new ObjectMapper().readTree(snsMessage);
+	        String subscribeURL = jsonNode.get("SubscribeURL").asText();
 
-			RestTemplate restTemplate = new RestTemplate();
-			restTemplate.getForObject(subscribeURL, String.class);
+	        RestTemplate restTemplate = new RestTemplate();
+	        try {
+	            String response = restTemplate.getForObject(subscribeURL, String.class);
+	            logger.info("Successfully confirmed subscription with response: {}", response);
+	        } catch (Exception e) {
+	            logger.error("Exception occurred while confirming subscription: {}", e.getMessage(), e);
+	        }
 
-			logger.info("Successfully confirm Subscription ...{}");
-		} catch (Exception e) {
-			logger.error("Exception occurred in confirmSubscription...{}", e.toString());
-		}
+	    } catch (Exception e) {
+	        logger.error("Exception occurred in confirmSubscription...{}", e.toString());
+	    }
 	}
+	
+
+
 
 	public String processNotification(String snsMessage) {
 		String retMsg = "";
@@ -120,9 +128,14 @@ public class SNSSubscriptionService {
 				Feed savedFeed = feedDAO.saveFeed(feed);
 				if (savedFeed.getFeedId().isEmpty()) {
 					return false;
+				}else {
+					LiveFeedDTO liveFeedDTO=  DTOMapper.toLiveFeedDTO(savedFeed);
+					liveFeedDTO.setCampaignDescription(feed.getCampaignDescription());
+					liveFeedDTO.setStoreName(feed.getStoreName());
+					return sendNotifications(liveFeedDTO);
 				}
 
-				return sendNotifications(feed);
+				
 			} else {
 				return true;
 			}
@@ -147,10 +160,10 @@ public class SNSSubscriptionService {
 		return feed;
 	}
 
-	private boolean sendNotifications(Feed savedFeed) {
-		boolean isSendNotification = notificationStrategy.sendNotification(savedFeed);
+	private boolean sendNotifications(LiveFeedDTO liveFeedDTO) {
+		boolean isSendNotification = notificationStrategy.sendNotification(liveFeedDTO);
 		logger.info("isSendLiveFeed: {}", isSendNotification);
-		boolean isSendEmail = emailStrategy.sendNotification(savedFeed);
+		boolean isSendEmail = emailStrategy.sendNotification(liveFeedDTO);
 		logger.info("isSendEmail: {}", isSendEmail);
 
 		return isSendEmail || isSendNotification;

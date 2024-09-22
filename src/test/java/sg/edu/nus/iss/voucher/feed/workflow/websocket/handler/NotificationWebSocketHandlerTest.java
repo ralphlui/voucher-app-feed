@@ -5,112 +5,107 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+
+import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Map;
 
 @SpringBootTest
 @ActiveProfiles("test")
 public class NotificationWebSocketHandlerTest {
 
     @InjectMocks
-    private NotificationWebSocketHandler notificationWebSocketHandler;
+    private NotificationWebSocketHandler handler;
 
-    @Mock
-    private WebSocketSession webSocketSession;
+    @MockBean
+    private WebSocketSession session;
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+	private LiveFeedDTO liveFeedDTO;
 
-    @Test
-    public void testAfterConnectionEstablished() throws Exception {
-        when(webSocketSession.getId()).thenReturn("session123");
-        notificationWebSocketHandler.afterConnectionEstablished(webSocketSession);
+	@BeforeEach
+	public void setUp() {
+		
+		session = Mockito.mock(WebSocketSession.class);
+		liveFeedDTO = new LiveFeedDTO();
+		liveFeedDTO.setUserId("11111");
+	}
 
-    }
+	@Test
+	public void testAfterConnectionEstablished () throws Exception {
 
-    @Test
-    public void testHandleTextMessagePayload() throws Exception {
-        when(webSocketSession.getId()).thenReturn("session123");
-        String jsonPayload = "{\n"
-        		+ "    \"data\": {\n"
-        		+ "        \"userID\": \"111\",\n"
-        		+ "        \"email\": \"eleven.11@gmail.com\",\n"
-        		+ "        \"username\": \"Eleven11\",\n"
-        		+ "        \"role\": \"CUSTOMER\",\n"
-        		+ "        \"preferences\": [\n"
-        		+ "            \"food\",\n"
-        		+ "            \"household\",\n"
-        		+ "            \"clothing\"\n"
-        		+ "        ],\n"
-        		+ "        \"active\": true,\n"
-        		+ "        \"verified\": true\n"
-        		+ "    }\n"
-        		+ "}\n"
-        		+ "";
+		URI mockUri = new URI("ws://localhost:8080/ws/liveFeeds?userId=11111");
+		when(session.getUri()).thenReturn(mockUri);
+		when(session.getId()).thenReturn("1234");
 
-        notificationWebSocketHandler.handleTextMessage(webSocketSession, new TextMessage(jsonPayload));
+		handler.afterConnectionEstablished(session);
 
-        assertEquals(webSocketSession, notificationWebSocketHandler.activeSessions.get("111"));
-    }
+		Map<String, WebSocketSession> activeSessions = handler.activeSessions;
+		assertTrue(activeSessions.containsKey("11111"));
+		assertEquals(session, activeSessions.get("11111"));
+	}
 
+	@Test
+	public void testAfterConnectionClosed() throws Exception {
 
-    @Test
-    public void testAfterConnectionClosed() throws Exception {
-        String email = "test@example.com";
-        when(webSocketSession.getId()).thenReturn("session123");
+		URI mockUri = new URI("ws://localhost:8080/ws/liveFeeds?userId=11111");
+		when(session.getUri()).thenReturn(mockUri);
+		handler.activeSessions.put("11111", session);
 
-        notificationWebSocketHandler.activeSessions.put(email, webSocketSession);
+		handler.afterConnectionClosed(session, CloseStatus.NORMAL);
 
-        notificationWebSocketHandler.afterConnectionClosed(webSocketSession, CloseStatus.NORMAL);
+		assertFalse(handler.activeSessions.containsKey("11111"));
+	}
 
-        assertNull(notificationWebSocketHandler.activeSessions.get(email));
-    }
+	@Test
+	public void testBroadcastToTargetedUsers() throws Exception {
 
-    @Test
-    public void testBroadcastToTargetedUsers() throws Exception {
-        Feed feed = new Feed();
-        feed.setCampaignId("123");
-        feed.setCampaignDescription("Mid-Autumn Sale");
-        feed.setUserId("111");
-        feed.setUserName("John");
-        feed.setEmail("test@example.com");
-        feed.setStoreName("SuperMart");
+		when(session.isOpen()).thenReturn(true);
+		handler.activeSessions.put("11111", session);
 
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonMsg = mapper.writeValueAsString(feed);
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonMessage = mapper.writeValueAsString(liveFeedDTO);
 
-        when(webSocketSession.isOpen()).thenReturn(true);
-        notificationWebSocketHandler.activeSessions.put("111", webSocketSession);
+		boolean messageSent = handler.broadcastToTargetedUsers(liveFeedDTO);
 
-        boolean result = notificationWebSocketHandler.broadcastToTargetedUsers(feed);
+		verify(session, times(1)).sendMessage(new TextMessage(jsonMessage));
+		assertTrue(messageSent);
+	}
 
-        assertTrue(result);
-        verify(webSocketSession).sendMessage(new TextMessage(jsonMsg));
-    }
+	@Test
+	public void testBroadcastToTargetedUsers_NoActiveSession() throws IOException {
 
-    @Test
-    public void testBroadcastToTargetedUsersNoActiveSession() throws Exception {
-        Feed feed = new Feed();
-        feed.setFeedId("feed123");
-        feed.setEmail("nonexistent@example.com");
-        feed.setCampaignId("123");
-        feed.setCampaignDescription("Mid-Autumn Sale");
-        feed.setStoreName("SuperMart");
+		boolean messageSent = handler.broadcastToTargetedUsers(liveFeedDTO);
 
-        boolean result = notificationWebSocketHandler.broadcastToTargetedUsers(feed);
+		verify(session, never()).sendMessage(any(TextMessage.class));
+		assertFalse(messageSent);
+	}
 
-        assertFalse(result);
-        verify(webSocketSession, never()).sendMessage(any(TextMessage.class));
-    }
+	@Test
+	public void testBroadcastToTargetedUsers_SessionClosed() throws IOException {
+
+		when(session.isOpen()).thenReturn(false);
+		handler.activeSessions.put("11111", session);
+
+		boolean messageSent = handler.broadcastToTargetedUsers(liveFeedDTO);
+
+		verify(session, never()).sendMessage(any(TextMessage.class));
+		assertFalse(messageSent);
+	}
+	
 }

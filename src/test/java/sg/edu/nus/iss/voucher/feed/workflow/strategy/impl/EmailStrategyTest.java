@@ -10,13 +10,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SESSenderService;
-import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-import java.util.Arrays;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -37,7 +35,7 @@ public class EmailStrategyTest {
     @Test
     void testSendNotification() throws Exception {
        
-        Feed feed = new Feed();
+    	LiveFeedDTO feed = new LiveFeedDTO();
         feed.setCampaignId("123");
         feed.setCampaignDescription("Mid-Autumn Sale");
         feed.setUserId("111");
