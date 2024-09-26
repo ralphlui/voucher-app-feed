@@ -1,5 +1,6 @@
 package sg.edu.nus.iss.voucher.feed.workflow.aws.service;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,10 +20,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.web.client.RestTemplate;
 
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.TargetUser;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.*;
+import sg.edu.nus.iss.voucher.feed.workflow.utility.DTOMapper;
 import sg.edu.nus.iss.voucher.feed.workflow.utility.JSONReader;
 
 public class SNSSubscriptionServiceTest {
@@ -44,6 +47,11 @@ public class SNSSubscriptionServiceTest {
 
 	@Mock
 	private RestTemplate restTemplate;
+	
+	@Mock
+    private DTOMapper dtoMapper;
+	
+	static String userId ="user123";
 
 	@BeforeEach
 	public void setUp() {
@@ -78,15 +86,16 @@ public class SNSSubscriptionServiceTest {
 		feed.setStoreName(feedMsg.getStoreName());
 
 		when(jsonReader.readFeedMessage(anyString())).thenReturn(feedMsg);
-		when(jsonReader.getUsersByPreferences(anyString())).thenReturn(users);
+		when(jsonReader.getUsersByPreferences(feedMsg.getCategory(),userId)).thenReturn(users);
 		when(feedDAO.checkFeedExistsByUserAndCampaign(anyString(), anyString())).thenReturn(true);
 		when(feedDAO.saveFeed(any())).thenReturn(feed);
 		when(notificationStrategy.sendNotification(any())).thenReturn(true);
 		when(emailStrategy.sendNotification(any())).thenReturn(true);
 
-		String result = snsSubscriptionService.processNotification(message);
+		String result = snsSubscriptionService.processNotification(message,userId);
 
-		assertEquals("Processed user:\n11:true\n", result);
+		assertEquals("Processed user:11:true", result);
 	}
 
+	
 }

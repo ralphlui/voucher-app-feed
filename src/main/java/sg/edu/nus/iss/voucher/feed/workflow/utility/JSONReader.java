@@ -67,14 +67,14 @@ public class JSONReader {
 		return feedMsg;
 	}
 
-	public ArrayList<TargetUser> getUsersByPreferences(String preferences) {
+	public ArrayList<TargetUser> getUsersByPreferences(String preferences,String XUserId) {
 		int page = 0;
 		int size = Integer.parseInt(pageMaxSize);
 		int totalRecord;
 
 		ArrayList<TargetUser> targetUsers = new ArrayList<TargetUser>();
 		do {
-			String responseStr = apiCall.getUsersByPreferences(preferences, page, size);
+			String responseStr = apiCall.getUsersByPreferences(preferences,XUserId, page, size);
 
 			try {
 
@@ -104,12 +104,36 @@ public class JSONReader {
 				page++;
 			} catch (ParseException e) {
 				e.printStackTrace();
-				logger.error("Error parsing JSON response... {}", e.toString());
+				logger.error("Error parsing JSON response for getUsersByPreferences... {}", e.toString());
 				break;
 			}
 		} while (totalRecord > page * size);
 		return targetUsers;
 	}
 
+	
+	public  String getActiveUser(String userId) {		 
+
+		String userName = "";
+		
+			String responseStr = apiCall.getActiveUser(userId);
+
+			try {
+
+				JSONParser parser = new JSONParser();
+				JSONObject jsonResponse = (JSONObject) parser.parse(responseStr);	
+				JSONObject data = (JSONObject) jsonResponse.get("data");
+			 	logger.info("User: " + data.toJSONString());
+					
+			    userName = GeneralUtility.makeNotNull(data.get("username").toString());
+
+			} catch (ParseException e) {
+				e.printStackTrace();
+				logger.error("Error parsing JSON response for getActiveUser... {}", e.toString());
+				 
+			}
+		
+		return userName;
+	}
 
 }

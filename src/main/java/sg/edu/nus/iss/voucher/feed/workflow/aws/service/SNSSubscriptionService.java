@@ -56,7 +56,7 @@ public class SNSSubscriptionService {
 
 
 
-	public String processNotification(String snsMessage) {
+	public String processNotification(String snsMessage, String userId) {
 		String retMsg = "";
 		try {
 			JsonNode jsonNode = new ObjectMapper().readTree(snsMessage);
@@ -80,18 +80,18 @@ public class SNSSubscriptionService {
 				return retMsg = "Bad Request:Category is empty.";
 			}
 
-			ArrayList<TargetUser> targetUsers = getTargetUsers(category);
+			ArrayList<TargetUser> targetUsers = getTargetUsers(category,userId);
 			if (targetUsers.isEmpty()) {
 				logger.warn("No users found for the category: {}", category);
 				return retMsg = "Bad Request:No users found for the category: " + category;
 			}
 
 			logger.info("Processing target users: {}", targetUsers);
-			retMsg = "Processed user:\n";
+			retMsg = "Processed user:";
 			for (TargetUser targetUser : targetUsers) {
 				boolean processed = processTargetUser(targetUser, feedMsg);
 				logger.info("Processed user: {} with result: {}", targetUser.getUserId(), processed);
-				retMsg += targetUser.getUserId() + ":" + processed + "\n";
+				retMsg += targetUser.getUserId() + ":" + processed ;
 
 			}
 
@@ -101,13 +101,13 @@ public class SNSSubscriptionService {
 		return retMsg;
 	}
 
-	ArrayList<TargetUser> getTargetUsers(String category) {
+	ArrayList<TargetUser> getTargetUsers(String category,String userId) {
 
-		ArrayList<TargetUser> targetUsers = jsonReader.getUsersByPreferences(category);
+		ArrayList<TargetUser> targetUsers = jsonReader.getUsersByPreferences(category,userId);
 		return targetUsers;
 	}
 
-	private boolean processTargetUser(TargetUser targetUser, MessagePayload feedMsg) {
+	public boolean processTargetUser(TargetUser targetUser, MessagePayload feedMsg) {
 
 		try {
 			String userId = GeneralUtility.makeNotNull(targetUser.getUserId()).trim();

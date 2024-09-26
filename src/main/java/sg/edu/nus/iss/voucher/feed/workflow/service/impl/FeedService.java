@@ -28,8 +28,6 @@ public class FeedService implements IFeedService {
 		this.feedDao = feedDao;
 	}
 
-	@Autowired
-	private JSONReader jsonReader;
 
 	@Override
 	public Map<Long, List<FeedDTO>> getFeedsByUserWithPagination(String userId, int page, int size) {

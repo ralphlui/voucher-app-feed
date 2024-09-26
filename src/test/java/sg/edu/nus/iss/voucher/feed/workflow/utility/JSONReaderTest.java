@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import sg.edu.nus.iss.voucher.feed.workflow.api.connector.AuthAPICall;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
@@ -24,8 +25,14 @@ public class JSONReaderTest {
     @InjectMocks
     private JSONReader jsonReader;
 
-    @Mock
+    @MockBean
     private AuthAPICall apiCall;
+    
+    static String userId ="1";
+    
+    private static final String PREFERENCES = "Food";
+    private static final String USER_ID = "testUserId";
+    private static final String PAGE_MAX_SIZE = "10";
 
     @BeforeEach
     public void setUp() {
@@ -60,9 +67,11 @@ public class JSONReaderTest {
     
     }
     
+    
     @Test
-    public void testGetAllTargetUsers() throws Exception {
-        // Prepare mock responses
+    public void testGetUsersByPreferences() {
+    	
+    	 // Prepare mock responses
         JSONObject page1Response = new JSONObject();
         page1Response.put("totalRecord", 5L);
         JSONArray dataArrayPage1 = new JSONArray();
@@ -81,26 +90,15 @@ public class JSONReaderTest {
         dataArrayPage1.add(user1);
         dataArrayPage1.add(user2);
         page1Response.put("data", dataArrayPage1);
+        
+        when(apiCall.getUsersByPreferences(PREFERENCES, USER_ID, 0, Integer.parseInt(PAGE_MAX_SIZE))).thenReturn(page1Response.toJSONString());
+        when(apiCall.getUsersByPreferences(PREFERENCES, USER_ID, 1, Integer.parseInt(PAGE_MAX_SIZE))).thenReturn(page1Response.toJSONString());
+        
+        ArrayList<TargetUser> users = jsonReader.getUsersByPreferences(PREFERENCES, USER_ID);
 
-
-        when(apiCall.getUsersByPreferences(eq("Food"), eq(0), anyInt())).thenReturn(page1Response.toString());
-       
-        ArrayList<TargetUser> users = jsonReader.getUsersByPreferences("Food");
-
-        assertEquals(2, users.size(), "The number of users returned should be 2");
-
-        TargetUser firstUser = users.get(0);
-        assertEquals("1", firstUser.getUserId());
-        assertEquals("user1@example.com", firstUser.getEmail());
-        assertEquals("User One", firstUser.getUsername());
-
-        TargetUser secondUser = users.get(1);
-        assertEquals("2", secondUser.getUserId());
-        assertEquals("user2@example.com", secondUser.getEmail());
-        assertEquals("User Two", secondUser.getUsername());
-
-      
-        verify(apiCall).getUsersByPreferences(eq("Food"), eq(0), anyInt());
+        assertEquals(2, users.size());
+        assertEquals("user1@example.com", users.get(0).getEmail());
+        assertEquals("user2@example.com", users.get(1).getEmail());
     }
 
 

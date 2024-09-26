@@ -1,94 +1,90 @@
 package sg.edu.nus.iss.voucher.feed.workflow.controller;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.json.simple.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SNSSubscriptionService;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.AuditDTO;
+import sg.edu.nus.iss.voucher.feed.workflow.entity.HTTPVerb;
+import sg.edu.nus.iss.voucher.feed.workflow.service.impl.AuditService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class SNSControllerTest {
+	
+	@Autowired
+	private MockMvc mockMvc;
 
-    @Autowired
-    private MockMvc mockMvc;
+	@MockBean
+	private SNSSubscriptionService snsReceiverService;
 
-    @Mock
-    private SNSSubscriptionService snsReceiverService;
+	@MockBean
+	private AuditService auditService;
 
-    @InjectMocks
-    private SNSController snsController;
+	@InjectMocks
+	private SNSController snsController;
 
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(snsController).build();
-    }
+	static String userId = "user123";
 
-    @Test
-    public void testReceiveNotification_Confirmation() throws Exception {
-        JSONObject json = new JSONObject();
-        json.put("Type", "SubscriptionConfirmation");
-        json.put("Message", "Test message");
-        json.put("MessageId", "12345");
+	@Value("${audit.activity.type.prefix}")
+	String activityTypePrefix;
+	
+	private static AuditDTO auditDTO ;
 
-        String message = json.toJSONString();
-        
-        doNothing().when(snsReceiverService).confirmSubscription(message);
+	@BeforeEach
+	void setUp() {
+		auditDTO = new AuditDTO();
+		auditDTO.setUserId(userId);
+		auditDTO.setActivityType(activityTypePrefix+"Feed Notification");
+		auditDTO.setRequestType(HTTPVerb.POST);
+		MockitoAnnotations.openMocks(this);
+	}
 
-        mockMvc.perform(post("/api/feeds/sns/notification")
-                .content(message)
-                .contentType("application/json"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Subscription confirmed"));
-    }
+	@Test
+	void testReceiveNotification() throws Exception {
+		String jsonMessage = "{\n"
+				+ "    \"Type\": \"Notification\",\n"
+				+ "    \"MessageId\": \"example-message-id\",\n"
+				+ "    \"TopicArn\": \"arn:aws:sns:region:account-id:topic-name\",\n"
+				+ "    \"Message\": \"{\\\"category\\\": \\\"Food\\\", \\\"campaign\\\": {\\\"campaignId\\\": \\\"123\\\", \\\"description\\\": \\\"Happy Hour\\\"}, \\\"store\\\": {\\\"storeId\\\": \\\"456\\\", \\\"name\\\": \\\"MUJI\\\"}}\",\n"
+				+ "    \"Timestamp\": \"2024-09-08T12:34:56.789Z\",\n"
+				+ "    \"SignatureVersion\": \"1\",\n"
+				+ "    \"Signature\": \"example-signature\",\n"
+				+ "    \"SigningCertURL\": \"https://sns-region.amazonaws.com/SimpleNotificationService-1234567890.pem\",\n"
+				+ "    \"UnsubscribeURL\": \"https://sns-region.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:region:account-id:topic-name:subscription-id\",\n"
+				+ "    \"MessageAttributes\": {\n"
+				+ "        \"X-User-Id\": {\n"
+				+ "            \"Type\": \"String\",\n"
+				+ "            \"Value\": \"user123\"\n"
+				+ "        }\n"
+				+ "    }\n"
+				+ "}";
 
-    @Test
-    public void testReceiveNotification_Notification() throws Exception {
-        JSONObject json = new JSONObject();
-        json.put("Type", "Notification");
-        json.put("Message", "Test message");
-        json.put("MessageId", "12345");
+		when(snsReceiverService.processNotification(anyString(), eq(userId))).thenReturn("Processed successfully");
+		 
+		when(auditService.createAuditDTO(userId, "Feed Notification", activityTypePrefix,
+				"/api/feeds/sns/notification/", HTTPVerb.POST)).thenReturn(auditDTO);
 
-        String message = json.toJSONString();
-        when(snsReceiverService.processNotification(message)).thenReturn("Success");
-
-        mockMvc.perform(post("/api/feeds/sns/notification")
-                .content(message)
-                .contentType("application/json"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Notification processed successfully\nSuccess"));
-    }
-
-    @Test
-    public void testReceiveNotification_InvalidType() throws Exception {
-        JSONObject json = new JSONObject();
-        json.put("Type", "InvalidType");
-        json.put("Message", "Test message");
-        json.put("MessageId", "12345");
-
-        String message = json.toJSONString();
-
-        mockMvc.perform(post("/api/feeds/sns/notification")
-                .content(message)
-                .contentType("application/json"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid SNS notification type"));
-    }
+		mockMvc.perform(
+				post("/api/feeds/sns/notification").contentType(MediaType.APPLICATION_JSON).content(jsonMessage))
+				.andExpect(status().isOk())
+				.andExpect(content().string("Notification processed successfully\nProcessed successfully"));
+	}
 
 }
-

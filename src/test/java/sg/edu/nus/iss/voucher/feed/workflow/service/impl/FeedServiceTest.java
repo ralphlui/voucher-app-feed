@@ -2,74 +2,88 @@ package sg.edu.nus.iss.voucher.feed.workflow.service.impl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.mockito.MockitoAnnotations;
+
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
 import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
-import sg.edu.nus.iss.voucher.feed.workflow.utility.JSONReader;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-@ActiveProfiles("test")
 public class FeedServiceTest {
 
     @Mock
     private FeedDAO feedDao;
-    
-    @Mock
-    private JSONReader jsonReader;
-
 
     @InjectMocks
     private FeedService feedService;
 
     @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(feedService, "jsonReader", jsonReader);
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testGetFeedsByEmailWithPagination() throws Exception {
-        String userId = "12345";
-        String email = "john@example.com";
-        
-        List<Feed> feeds = new ArrayList<>();
-        Feed feed = new Feed();
-        feed.setEmail(email);
-        feeds.add(feed);
-        when(feedDao.getAllFeedByUserId(userId, 0, 10)).thenReturn(feeds);
+    public void testGetFeedsByUserWithPagination_ValidUser() {
+        String userId = "test@example.com";
+        int page = 1;
+        int size = 10;
 
-        Map<Long, List<FeedDTO>> result = feedService.getFeedsByUserWithPagination(userId, 0, 10);
+        List<Feed> mockFeeds = new ArrayList<>();
+        Feed feed = new Feed();
+        feed.setFeedId("feed1");
+        mockFeeds.add(feed);
+
+        when(feedDao.getAllFeedByUserId(userId, page, size)).thenReturn(mockFeeds);
+
+        Map<Long, List<FeedDTO>> result = feedService.getFeedsByUserWithPagination(userId, page, size);
 
         assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertTrue(result.containsKey(1L));
-        assertEquals(1, result.get(1L).size());
-        verify(feedDao, times(1)).getAllFeedByUserId(userId, 0, 10);
+        assertEquals(1, result.size());
+        assertEquals(1, result.get(1L).size());  // Assuming 1 record exists
+        verify(feedDao, times(1)).getAllFeedByUserId(userId, page, size);
     }
 
+    @Test
+    public void testGetFeedsByUserWithPagination_InvalidUser() {
+        String userId = "";
+        int page = 1;
+        int size = 10;
+
+        Map<Long, List<FeedDTO>> result = feedService.getFeedsByUserWithPagination(userId, page, size);
+
+        assertTrue(result.isEmpty());
+        verify(feedDao, never()).getAllFeedByUserId(anyString(), anyInt(), anyInt());
+    }
 
     @Test
-    void testFindByFeedId() throws Exception {
-      
-        String feedId = "feed123";
-        String email = "eleven.11@gmail.com";
-        Feed feed = new Feed();
-        feed.setFeedId(feedId);
-        feed.setEmail(email);
-      
-        when(feedDao.findById(feedId)).thenReturn(feed);
+    public void testGetFeedsByUserWithPagination_NoFeedsFound() {
+        String userId = "test@example.com";
+        int page = 1;
+        int size = 10;
+
+        when(feedDao.getAllFeedByUserId(userId, page, size)).thenReturn(Collections.emptyList());
+
+        Map<Long, List<FeedDTO>> result = feedService.getFeedsByUserWithPagination(userId, page, size);
+
+        assertTrue(result.isEmpty());
+        verify(feedDao, times(1)).getAllFeedByUserId(userId, page, size);
+    }
+
+    @Test
+    public void testFindByFeedId_FeedExists() {
+        String feedId = "feed1";
+        Feed mockFeed = new Feed();
+        mockFeed.setFeedId(feedId);
+
+        when(feedDao.findById(feedId)).thenReturn(mockFeed);
 
         FeedDTO result = feedService.findByFeedId(feedId);
 
@@ -78,15 +92,27 @@ public class FeedServiceTest {
         verify(feedDao, times(1)).findById(feedId);
     }
 
-   
     @Test
-    void testUpdateReadStatusById() {
-       
-        String feedId = "feed123";
-        Feed updatedFeed = new Feed();
-        updatedFeed.setFeedId(feedId);
+    public void testFindByFeedId_FeedNotFound() {
+        String feedId = "nonExistingFeed";
+
+        when(feedDao.findById(feedId)).thenReturn(null);
+
+        FeedDTO result = feedService.findByFeedId(feedId);
+
+        assertNull(result);
+        verify(feedDao, times(1)).findById(feedId);
+    }
+
+
+    @Test
+    public void testUpdateReadStatusById_Success() {
+        String feedId = "feed1";
+        Feed mockFeed = new Feed();
+        mockFeed.setFeedId(feedId);
+
         when(feedDao.upateReadStatus(feedId)).thenReturn(true);
-        when(feedDao.findById(feedId)).thenReturn(updatedFeed);
+        when(feedDao.findById(feedId)).thenReturn(mockFeed);
 
         FeedDTO result = feedService.updateReadStatusById(feedId);
 
@@ -96,6 +122,18 @@ public class FeedServiceTest {
         verify(feedDao, times(1)).findById(feedId);
     }
 
-   
+    @Test
+    public void testUpdateReadStatusById_Failure() {
+        String feedId = "feed1";
+
+        when(feedDao.upateReadStatus(feedId)).thenReturn(false);
+
+        FeedDTO result = feedService.updateReadStatusById(feedId);
+
+        assertNotNull(result);
+        assertNull(result.getFeedId());  
+        verify(feedDao, times(1)).upateReadStatus(feedId);
+        verify(feedDao, never()).findById(anyString()); 
+    }
 }
 
