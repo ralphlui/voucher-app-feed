@@ -1,7 +1,6 @@
 package sg.edu.nus.iss.voucher.feed.workflow.utility;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import sg.edu.nus.iss.voucher.feed.workflow.api.connector.AuthAPICall;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.TargetUser;
 
@@ -67,14 +65,14 @@ public class JSONReader {
 		return feedMsg;
 	}
 
-	public ArrayList<TargetUser> getUsersByPreferences(String preferences,String XUserId) {
+	public ArrayList<TargetUser> getUsersByPreferences(String preferences) {
 		int page = 0;
 		int size = Integer.parseInt(pageMaxSize);
 		int totalRecord;
-
+	   
 		ArrayList<TargetUser> targetUsers = new ArrayList<TargetUser>();
 		do {
-			String responseStr = apiCall.getUsersByPreferences(preferences,XUserId, page, size);
+			String responseStr = apiCall.getUsersByPreferences(preferences, page, size);
 
 			try {
 
