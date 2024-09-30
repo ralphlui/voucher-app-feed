@@ -76,15 +76,13 @@ public class SQSQueueHandler {
 			if (doesQueueExist(queueName)) {
 				String queueUrl = amazonSQS.getQueueUrl(queueName).getQueueUrl();
 
-				logger.info("consumeMessages queueUrl:" + queueUrl);
-
 				ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrl)
 						.withMaxNumberOfMessages(10).withWaitTimeSeconds(5);
 
 				List<Message> messages = amazonSQS.receiveMessage(receiveMessageRequest).getMessages();
 
 				for (Message message : messages) {
-
+					
 					logger.info("Received Message: " + message.getBody());
 
 					processFeedData(message.getBody());
@@ -96,7 +94,7 @@ public class SQSQueueHandler {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error consuming messages: " + e.getMessage());
+			logger.info("Error consuming messages: " + e.getMessage());
 		}
 	}
 
