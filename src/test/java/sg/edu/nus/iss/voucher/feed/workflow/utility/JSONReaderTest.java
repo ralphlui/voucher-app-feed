@@ -31,7 +31,6 @@ public class JSONReaderTest {
     static String userId ="1";
     
     private static final String PREFERENCES = "Food";
-    private static final String USER_ID = "testUserId";
     private static final String PAGE_MAX_SIZE = "10";
 
     @BeforeEach
@@ -91,10 +90,10 @@ public class JSONReaderTest {
         dataArrayPage1.add(user2);
         page1Response.put("data", dataArrayPage1);
         
-        when(apiCall.getUsersByPreferences(PREFERENCES, USER_ID, 0, Integer.parseInt(PAGE_MAX_SIZE))).thenReturn(page1Response.toJSONString());
-        when(apiCall.getUsersByPreferences(PREFERENCES, USER_ID, 1, Integer.parseInt(PAGE_MAX_SIZE))).thenReturn(page1Response.toJSONString());
+        when(apiCall.getUsersByPreferences(PREFERENCES, 0, Integer.parseInt(PAGE_MAX_SIZE))).thenReturn(page1Response.toJSONString());
+        when(apiCall.getUsersByPreferences(PREFERENCES, 1, Integer.parseInt(PAGE_MAX_SIZE))).thenReturn(page1Response.toJSONString());
         
-        ArrayList<TargetUser> users = jsonReader.getUsersByPreferences(PREFERENCES, USER_ID);
+        ArrayList<TargetUser> users = jsonReader.getUsersByPreferences(PREFERENCES);
 
         assertEquals(2, users.size());
         assertEquals("user1@example.com", users.get(0).getEmail());

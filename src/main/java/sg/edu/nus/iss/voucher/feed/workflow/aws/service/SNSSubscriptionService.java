@@ -35,28 +35,8 @@ public class SNSSubscriptionService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SNSSubscriptionService.class);
 
-	public void confirmSubscription(String snsMessage) {
-		try {
-	        JsonNode jsonNode = new ObjectMapper().readTree(snsMessage);
-	        String subscribeURL = jsonNode.get("SubscribeURL").asText();
 
-	        RestTemplate restTemplate = new RestTemplate();
-	        try {
-	            String response = restTemplate.getForObject(subscribeURL, String.class);
-	            logger.info("Successfully confirmed subscription with response: {}", response);
-	        } catch (Exception e) {
-	            logger.error("Exception occurred while confirming subscription: {}", e.getMessage(), e);
-	        }
-
-	    } catch (Exception e) {
-	        logger.error("Exception occurred in confirmSubscription...{}", e.toString());
-	    }
-	}
-	
-
-
-
-	public String processNotification(String snsMessage, String userId) {
+	public String processNotification(String snsMessage) {
 		String retMsg = "";
 		try {
 			JsonNode jsonNode = new ObjectMapper().readTree(snsMessage);
@@ -80,7 +60,7 @@ public class SNSSubscriptionService {
 				return retMsg = "Bad Request:Category is empty.";
 			}
 
-			ArrayList<TargetUser> targetUsers = getTargetUsers(category,userId);
+			ArrayList<TargetUser> targetUsers = getTargetUsers(category);
 			if (targetUsers.isEmpty()) {
 				logger.warn("No users found for the category: {}", category);
 				return retMsg = "Bad Request:No users found for the category: " + category;
@@ -101,9 +81,9 @@ public class SNSSubscriptionService {
 		return retMsg;
 	}
 
-	ArrayList<TargetUser> getTargetUsers(String category,String userId) {
+	ArrayList<TargetUser> getTargetUsers(String category) {
 
-		ArrayList<TargetUser> targetUsers = jsonReader.getUsersByPreferences(category,userId);
+		ArrayList<TargetUser> targetUsers = jsonReader.getUsersByPreferences(category);
 		return targetUsers;
 	}
 

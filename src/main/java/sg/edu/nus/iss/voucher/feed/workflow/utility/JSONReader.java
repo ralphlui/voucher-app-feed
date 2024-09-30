@@ -67,14 +67,14 @@ public class JSONReader {
 		return feedMsg;
 	}
 
-	public ArrayList<TargetUser> getUsersByPreferences(String preferences,String XUserId) {
+	public ArrayList<TargetUser> getUsersByPreferences(String preferences) {
 		int page = 0;
 		int size = Integer.parseInt(pageMaxSize);
 		int totalRecord;
 
 		ArrayList<TargetUser> targetUsers = new ArrayList<TargetUser>();
 		do {
-			String responseStr = apiCall.getUsersByPreferences(preferences,XUserId, page, size);
+			String responseStr = apiCall.getUsersByPreferences(preferences, page, size);
 
 			try {
 

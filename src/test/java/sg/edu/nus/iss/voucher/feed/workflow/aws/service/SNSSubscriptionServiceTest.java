@@ -4,9 +4,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -17,6 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
@@ -28,6 +29,8 @@ import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.*;
 import sg.edu.nus.iss.voucher.feed.workflow.utility.DTOMapper;
 import sg.edu.nus.iss.voucher.feed.workflow.utility.JSONReader;
 
+@SpringBootTest
+@ActiveProfiles("test")
 public class SNSSubscriptionServiceTest {
 
 	@InjectMocks
@@ -86,13 +89,13 @@ public class SNSSubscriptionServiceTest {
 		feed.setStoreName(feedMsg.getStoreName());
 
 		when(jsonReader.readFeedMessage(anyString())).thenReturn(feedMsg);
-		when(jsonReader.getUsersByPreferences(feedMsg.getCategory(),userId)).thenReturn(users);
+		when(jsonReader.getUsersByPreferences(feedMsg.getCategory())).thenReturn(users);
 		when(feedDAO.checkFeedExistsByUserAndCampaign(anyString(), anyString())).thenReturn(true);
 		when(feedDAO.saveFeed(any())).thenReturn(feed);
 		when(notificationStrategy.sendNotification(any())).thenReturn(true);
 		when(emailStrategy.sendNotification(any())).thenReturn(true);
 
-		String result = snsSubscriptionService.processNotification(message,userId);
+		String result = snsSubscriptionService.processNotification(message);
 
 		assertEquals("Processed user:11:true", result);
 	}

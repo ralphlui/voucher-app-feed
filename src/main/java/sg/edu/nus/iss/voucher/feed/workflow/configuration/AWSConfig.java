@@ -11,6 +11,8 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 
@@ -47,6 +49,14 @@ public class AWSConfig {
 	@Bean
     public AmazonSQS amazonSQSClient(AWSCredentials awsCredentials) {
         return AmazonSQSClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+                .withRegion(awsRegion)
+                .build();
+    }
+	
+	@Bean
+    public AmazonSNS amazonSNSClient(AWSCredentials awsCredentials) {
+        return AmazonSNSClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .withRegion(awsRegion)
                 .build();

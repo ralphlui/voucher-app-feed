@@ -26,8 +26,9 @@ public class AuthAPICall {
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthAPICall.class);
 	
-	public String getUsersByPreferences(String preferences,String userId, int page, int size) {
+	public String getUsersByPreferences(String preferences, int page, int size) {
 	    String responseStr = "";
+	    String userId="FeedNotifier";
 	    
 	    CloseableHttpClient httpClient = HttpClients.createDefault();
 	    try {
