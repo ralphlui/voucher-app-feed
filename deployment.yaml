@@ -49,6 +49,12 @@ spec:
                 configMapKeyRef:
                   name: my-configmap
                   key: AUDIT_SQS_URL
+            - name: FEED_SQS_QUEUE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: QUEUE_NAME
+              value: "queue-$(POD_NAME)"
           resources:
            requests:
              cpu: "50m"
