@@ -54,7 +54,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: FEED_SQS_QUEUE_NAME
-              value: "queue-$(POD_NAME)"
+              value: "$(POD_NAME)"
           resources:
            requests:
              cpu: "50m"
