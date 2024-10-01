@@ -49,11 +49,11 @@ spec:
                 configMapKeyRef:
                   name: my-configmap
                   key: AUDIT_SQS_URL
-            - name: FEED_SQS_QUEUE_NAME
+            - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: QUEUE_NAME
+            - name: FEED_SQS_QUEUE_NAME
               value: "queue-$(POD_NAME)"
           resources:
            requests:
