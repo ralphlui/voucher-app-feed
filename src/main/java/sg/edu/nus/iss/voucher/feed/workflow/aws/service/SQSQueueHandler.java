@@ -1,6 +1,8 @@
 package sg.edu.nus.iss.voucher.feed.workflow.aws.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,9 @@ public class SQSQueueHandler {
 
 	@Value("${aws.sqs.queue.feed.name}")
 	String queueName;
+	
+	@Value("${aws.sqs.feed.arn.prefix}")
+	String sqsArnPrefix;
 
 	@Value("${aws.sns.feed.topic.arn}")
 	String topicArn;
@@ -50,8 +55,33 @@ public class SQSQueueHandler {
 			logger.info("Feed Queue already exists: " + queueUrl);
 
 		} catch (QueueDoesNotExistException e) {
+			
+			String policy = "{\n"
+					+ "  \"Version\": \"2012-10-17\",\n"
+					+ "  \"Id\": \"SQSQueuePolicy\",\n"
+					+ "  \"Statement\": [\n"
+					+ "    {\n"
+					+ "      \"Sid\": \"AllowSNSDelivery\",\n"
+					+ "      \"Effect\": \"Allow\",\n"
+					+ "      \"Principal\": \"*\",\n"
+					+ "      \"Action\": \"SQS:SendMessage\",\n"
+					+ "      \"Resource\": \""+sqsArnPrefix.trim()+queueName.trim()+"\",\n"
+					+ "      \"Condition\": {\n"
+					+ "        \"ArnEquals\": {\n"
+					+ "          \"aws:SourceArn\": \""+topicArn+"\"\n"
+					+ "        }\n"
+					+ "      }\n"
+					+ "    }\n"
+					+ "  ]\n"
+					+ "}";
+			
+	        
+	        Map<String, String> queueAttributes = new HashMap<>();
+	        queueAttributes.put("Policy", policy);
+	        
+	        CreateQueueRequest createQueueRequest = new CreateQueueRequest(queueName)
+	                .withAttributes(queueAttributes);
 
-			CreateQueueRequest createQueueRequest = new CreateQueueRequest(queueName);
 			queueUrl = amazonSQS.createQueue(createQueueRequest).getQueueUrl();
 			logger.info("Queue created: " + queueUrl);
 		}
@@ -99,10 +129,9 @@ public class SQSQueueHandler {
 	}
 
 	public boolean doesQueueExist(String queueName) {
-        // Get all queues in the account
+       
         List<String> queueUrls = amazonSQS.listQueues(new ListQueuesRequest()).getQueueUrls();
 
-        // Check if any of the URLs end with the desired queue name
         return queueUrls.stream().anyMatch(url -> url.endsWith("/" + queueName));
     }
 

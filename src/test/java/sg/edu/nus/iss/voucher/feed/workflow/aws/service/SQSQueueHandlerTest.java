@@ -36,6 +36,9 @@ public class SQSQueueHandlerTest {
 
     @Value("${aws.sns.feed.topic.arn}")
     private String topicArn;
+    
+    @Value("${aws.sqs.feed.arn.prefix}")
+	String sqsArnPrefix;
 
     @InjectMocks
     private SQSQueueHandler sqsQueueHandler;
@@ -48,6 +51,7 @@ public class SQSQueueHandlerTest {
     public void setUp() { 
          sqsQueueHandler.queueName = queueName;
          sqsQueueHandler.topicArn = topicArn;
+         sqsQueueHandler.sqsArnPrefix = sqsArnPrefix;
     }
 
 
