@@ -68,14 +68,15 @@ public class SQSQueueHandler {
 					+ "      \"Resource\": \""+sqsArnPrefix.trim()+queueName.trim()+"\",\n"
 					+ "      \"Condition\": {\n"
 					+ "        \"ArnEquals\": {\n"
-					+ "          \"aws:SourceArn\": \""+topicArn+"\"\n"
+					+ "          \"aws:SourceArn\": \""+topicArn+"\n"
 					+ "        }\n"
 					+ "      }\n"
 					+ "    }\n"
 					+ "  ]\n"
 					+ "}";
 			
-	        
+			logger.info("Queue policy: " + policy);
+			
 	        Map<String, String> queueAttributes = new HashMap<>();
 	        queueAttributes.put("Policy", policy);
 	        
