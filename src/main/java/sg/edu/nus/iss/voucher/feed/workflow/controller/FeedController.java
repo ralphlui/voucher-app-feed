@@ -62,11 +62,11 @@ public class FeedController {
 				List<FeedDTO> feedDTOList = new ArrayList<FeedDTO>();
 				long totalRecord = 0;
 				if (resultMap.size() == 0) {
-					String mesasge = "No feed found for user: "+ userId;
+					String mesasge = "Feeds not found.";
 					logger.error(mesasge);
-					auditService.logAudit(auditDTO,404,message);
+					auditService.logAudit(auditDTO,200,message);
 				
-					return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					return ResponseEntity.status(HttpStatus.OK)
 							.body(APIResponse.success(feedDTOList, mesasge , totalRecord));
 				}
 				for (Map.Entry<Long, List<FeedDTO>> entry : resultMap.entrySet()) {
@@ -76,7 +76,7 @@ public class FeedController {
 					logger.info("FeedDTO List: " + feedDTOList);
 				}
 				
-				message = "Successfully get all feeds for user: " + userId;
+				message = "Successfully get all feeds";
 				auditService.logAudit(auditDTO,200,message);
 				
 				return ResponseEntity.status(HttpStatus.OK)
@@ -90,11 +90,11 @@ public class FeedController {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			message = "Calling getAllByEmail feed API failed." ;
+			message = "An unexpected error occurred. Please contact support." ;
 			logger.error(message);
 			auditDTO.setRemarks(e.toString());
 			auditService.logAudit(auditDTO,500,message);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(APIResponse.error(e.toString()));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(APIResponse.error(message));
 		}
 	}
 	
@@ -136,11 +136,11 @@ public class FeedController {
 				
 		} catch (Exception e) {
 			e.printStackTrace();
-			message = "Calling getById feed API failed";
+			message = "An unexpected error occurred. Please contact support." ;
 			logger.error(message + e.toString());
 			auditDTO.setRemarks(e.toString());
 			auditService.logAudit(auditDTO,500,message);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(APIResponse.error(e.toString()));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(APIResponse.error(message));
 		}
 	}
 	
@@ -177,12 +177,12 @@ public class FeedController {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			message = "Calling patchFeedReadStatus feed API failed";
+			message = "An unexpected error occurred. Please contact support." ;
 			logger.error(message + e.toString());
 			auditDTO.setRemarks(e.toString());
 			auditService.logAudit(auditDTO,500,message);
 			 
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(APIResponse.error(e.toString()));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(APIResponse.error(message));
 		}
 	}
 	

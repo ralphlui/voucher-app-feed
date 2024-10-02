@@ -93,10 +93,10 @@ public class FeedControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data.length()").value(mockFeeds.size()))
-                .andExpect(jsonPath("$.message").value("Successfully get all feeds for user: " + userId))
+                .andExpect(jsonPath("$.message").value("Successfully get all feeds"))
                 .andExpect(jsonPath("$.totalRecord").value(10));
 
-        verify(auditService).logAudit(auditDTO, 200, "Successfully get all feeds for user: " + userId);
+        verify(auditService).logAudit(auditDTO, 200, "Successfully get all feeds");
     }
     
     @Test
