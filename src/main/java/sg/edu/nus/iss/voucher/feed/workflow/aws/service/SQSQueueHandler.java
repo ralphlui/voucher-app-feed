@@ -68,7 +68,7 @@ public class SQSQueueHandler {
 					+ "      \"Resource\": \""+sqsArnPrefix.trim()+queueName.trim()+"\",\n"
 					+ "      \"Condition\": {\n"
 					+ "        \"ArnEquals\": {\n"
-					+ "          \"aws:SourceArn\": \""+topicArn+"\n"
+					+ "          \"aws:SourceArn\": \""+topicArn+"\"\n"
 					+ "        }\n"
 					+ "      }\n"
 					+ "    }\n"
