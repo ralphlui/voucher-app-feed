@@ -138,8 +138,6 @@ public class SQSQueueHandler {
 
 	public void processFeedData(String snsMessage) {
 
-		logger.info("Processing feed data: " + snsMessage);
-
 		String retMsg = snsSubscriptionService.processNotification(snsMessage);
 
 		logger.info("processNotification: " + retMsg);

@@ -1,5 +1,7 @@
 package sg.edu.nus.iss.voucher.feed.workflow.configuration;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,38 +24,37 @@ public class VoucherFeedSecurityConfig {
     private static final String[] SECURED_URLS = { "/api/feeds/**", "/ws/liveFeeds/**" };
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.cors(cors -> {
-            cors.configurationSource(request -> {
-                CorsConfiguration config = new CorsConfiguration();
-                config.applyPermitDefaultValues();
-                return config;
-            });
-        }).headers(headers -> headers.addHeaderWriter(new StaticHeadersWriter("Access-Control-Allow-Origin", "*"))
-                .addHeaderWriter(new HstsHeaderWriter(31536000, false, true)).addHeaderWriter((request, response) -> {
-                    response.addHeader("Cache-Control", "max-age=60, must-revalidate");
-                }))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        auth -> auth.requestMatchers(SECURED_URLS).permitAll().anyRequest().authenticated())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).build();
-    }
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	    return http.cors(cors -> {
+	        cors.configurationSource(request -> {
+	            CorsConfiguration config = new CorsConfiguration();
+	            config.setAllowedOrigins(List.of("*"));
+	            config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "OPTIONS"));
+	            config.setAllowedHeaders(List.of("*"));
+	            config.applyPermitDefaultValues();
+	            return config;
+	        });
+	    }).headers(headers -> headers
+	        .addHeaderWriter(new StaticHeadersWriter("Access-Control-Allow-Origin", "*"))
+	        .addHeaderWriter(new StaticHeadersWriter("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, OPTIONS"))
+	        .addHeaderWriter(new StaticHeadersWriter("Access-Control-Allow-Headers", "*"))
+	        .addHeaderWriter(new HstsHeaderWriter(31536000, false, true))
+	        .addHeaderWriter((request, response) -> {
+	            response.addHeader("Cache-Control", "max-age=60, must-revalidate");
+	        })
+	    ).csrf(AbstractHttpConfigurer::disable)
+	    .authorizeHttpRequests(auth -> auth
+	        .requestMatchers(SECURED_URLS).permitAll()
+	        .anyRequest().authenticated()
+	    )
+	    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	    .build();
+	}
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                    .allowedOrigins("*")
-                    .allowedMethods("GET", "POST", "PUT","PATCH")
-                    .allowedHeaders("*");
-            }
-        };
-    }
+   
 }

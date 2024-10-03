@@ -28,11 +28,10 @@ public class EmailStrategy implements IFeedStrategy {
 
 	@Override
 	public boolean sendNotification(LiveFeedDTO liveFeedDTO) {
-
+		
 		try {
 
-			String campaignURL = frontendURL + "/components/customer/campaigns";
-			logger.info("campaignURL... {}", campaignURL);
+			String campaignURL = frontendURL + "/campaign/"+liveFeedDTO.getCampaignId().trim();
 
 			String subject = "Explore Our Exciting [[campaign]] Campaign" ;
 			subject = subject.replace("[[campaign]]", liveFeedDTO.getCampaignDescription());
