@@ -7,15 +7,15 @@ import lombok.Setter;
 @Setter
 public class FeedDTO {
 
-	private String feedId;
-	private String campaignId;
-	private String storeId;
+	private String feedId="";
+	private String campaignId="";
+	private String campaignDescription="";
+	private String storeId="";
+	private String storeName="";
 	private String isReaded = "0";
-	private String readTime;
-	private String userId;
-	private String email;
-	private String userName;
-	private String createdDate;
+	private String userId="";
+	private String email="";
+	private String userName="";
 	private String category="";
 
 	public FeedDTO() {

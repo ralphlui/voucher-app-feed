@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
-import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.TargetUser;
@@ -97,8 +97,8 @@ public class SNSSubscriptionServiceTest {
         when(jsonReader.getUsersByPreferences(anyString())).thenReturn(users);
         when(feedDAO.checkFeedExistsByUserAndCampaign(anyString(), anyString())).thenReturn(true);
         when(feedDAO.saveFeed(any(Feed.class))).thenReturn(feed); 
-        when(notificationStrategy.sendNotification(any(LiveFeedDTO.class))).thenReturn(true);
-        when(emailStrategy.sendNotification(any(LiveFeedDTO.class))).thenReturn(true);
+        when(notificationStrategy.sendNotification(any(FeedDTO.class))).thenReturn(true);
+        when(emailStrategy.sendNotification(any(FeedDTO.class))).thenReturn(true);
 
      
         String result = snsSubscriptionService.processNotification(snsMessage);

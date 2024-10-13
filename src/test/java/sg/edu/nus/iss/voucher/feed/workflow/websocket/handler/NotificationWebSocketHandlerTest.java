@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
@@ -14,9 +12,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.MessagePayload;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,14 +32,14 @@ public class NotificationWebSocketHandlerTest {
     @MockBean
     private WebSocketSession session;
 
-	private LiveFeedDTO liveFeedDTO;
+	private FeedDTO feedDTO;
 
 	@BeforeEach
 	public void setUp() {
 		
 		session = Mockito.mock(WebSocketSession.class);
-		liveFeedDTO = new LiveFeedDTO();
-		liveFeedDTO.setUserId("11111");
+		feedDTO = new FeedDTO();
+		feedDTO.setUserId("11111");
 	}
 
 	@Test
@@ -79,9 +75,9 @@ public class NotificationWebSocketHandlerTest {
 		handler.activeSessions.put("11111", session);
 
 		ObjectMapper mapper = new ObjectMapper();
-		String jsonMessage = mapper.writeValueAsString(liveFeedDTO);
+		String jsonMessage = mapper.writeValueAsString(feedDTO);
 
-		boolean messageSent = handler.broadcastToTargetedUsers(liveFeedDTO);
+		boolean messageSent = handler.broadcastToTargetedUsers(feedDTO);
 
 		verify(session, times(1)).sendMessage(new TextMessage(jsonMessage));
 		assertTrue(messageSent);
@@ -90,7 +86,7 @@ public class NotificationWebSocketHandlerTest {
 	@Test
 	public void testBroadcastToTargetedUsers_NoActiveSession() throws IOException {
 
-		boolean messageSent = handler.broadcastToTargetedUsers(liveFeedDTO);
+		boolean messageSent = handler.broadcastToTargetedUsers(feedDTO);
 
 		verify(session, never()).sendMessage(any(TextMessage.class));
 		assertFalse(messageSent);
@@ -102,7 +98,7 @@ public class NotificationWebSocketHandlerTest {
 		when(session.isOpen()).thenReturn(false);
 		handler.activeSessions.put("11111", session);
 
-		boolean messageSent = handler.broadcastToTargetedUsers(liveFeedDTO);
+		boolean messageSent = handler.broadcastToTargetedUsers(feedDTO);
 
 		verify(session, never()).sendMessage(any(TextMessage.class));
 		assertFalse(messageSent);

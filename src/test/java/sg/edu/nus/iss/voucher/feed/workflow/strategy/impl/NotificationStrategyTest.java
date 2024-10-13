@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.websocket.handler.NotificationWebSocketHandler;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,7 +27,7 @@ class NotificationStrategyTest {
 
     @Test
     void testSendNotification() {
-    	LiveFeedDTO feed = new LiveFeedDTO();
+    	FeedDTO feed = new FeedDTO();
     	feed.setCampaignId("123");
         feed.setCampaignDescription("Mid-Autumn Sale");
         feed.setUserId("111");

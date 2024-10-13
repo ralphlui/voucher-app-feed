@@ -6,13 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import sg.edu.nus.iss.voucher.feed.workflow.dao.FeedDAO;
-import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.*;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.EmailStrategy;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.impl.NotificationStrategy;
@@ -109,10 +108,9 @@ public class SNSSubscriptionService {
 				if (savedFeed.getFeedId().isEmpty()) {
 					return false;
 				}else {
-					LiveFeedDTO liveFeedDTO=  DTOMapper.toLiveFeedDTO(savedFeed);
-					liveFeedDTO.setCampaignDescription(feed.getCampaignDescription());
-					liveFeedDTO.setStoreName(feed.getStoreName());
-					return sendNotifications(liveFeedDTO);
+					FeedDTO feedDTO=  DTOMapper.toFeedDTO(savedFeed);
+					
+					return sendNotifications(feedDTO);
 				}
 
 				
@@ -140,10 +138,10 @@ public class SNSSubscriptionService {
 		return feed;
 	}
 
-	private boolean sendNotifications(LiveFeedDTO liveFeedDTO) {
-		boolean isSendNotification = notificationStrategy.sendNotification(liveFeedDTO);
+	private boolean sendNotifications(FeedDTO feedDTO) {
+		boolean isSendNotification = notificationStrategy.sendNotification(feedDTO);
 		logger.info("isSendLiveFeed: {}", isSendNotification);
-		boolean isSendEmail = emailStrategy.sendNotification(liveFeedDTO);
+		boolean isSendEmail = emailStrategy.sendNotification(feedDTO);
 		logger.info("isSendEmail: {}", isSendEmail);
 
 		return isSendEmail || isSendNotification;

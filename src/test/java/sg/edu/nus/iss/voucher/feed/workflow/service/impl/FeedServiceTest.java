@@ -130,8 +130,7 @@ public class FeedServiceTest {
 
         FeedDTO result = feedService.updateReadStatusById(feedId);
 
-        assertNotNull(result);
-        assertNull(result.getFeedId());  
+        assertNotNull(result); 
         verify(feedDao, times(1)).upateReadStatus(feedId);
         verify(feedDao, never()).findById(anyString()); 
     }

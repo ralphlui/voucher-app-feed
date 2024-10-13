@@ -10,7 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SESSenderService;
-import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
@@ -35,7 +35,7 @@ public class EmailStrategyTest {
     @Test
     void testSendNotification() throws Exception {
        
-    	LiveFeedDTO feed = new LiveFeedDTO();
+    	FeedDTO feed = new FeedDTO();
         feed.setCampaignId("123");
         feed.setCampaignDescription("Mid-Autumn Sale");
         feed.setUserId("111");

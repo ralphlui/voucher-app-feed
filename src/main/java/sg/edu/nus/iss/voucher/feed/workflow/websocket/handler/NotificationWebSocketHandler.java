@@ -7,8 +7,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
-import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -71,12 +70,12 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
 
     
     
-    public boolean broadcastToTargetedUsers(LiveFeedDTO liveFeedDTO) {
+    public boolean broadcastToTargetedUsers(FeedDTO feedDTO) {
         boolean messageSent = false;
-        String userId = liveFeedDTO.getUserId();
+        String userId = feedDTO.getUserId();
         try {
             ObjectMapper mapper = new ObjectMapper();
-            String jsonMsg = mapper.writeValueAsString(liveFeedDTO);
+            String jsonMsg = mapper.writeValueAsString(feedDTO);
             
             // Check if the target user id is in activeSessions map
             WebSocketSession session = activeSessions.get(userId);

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import sg.edu.nus.iss.voucher.feed.workflow.aws.service.SESSenderService;
-import sg.edu.nus.iss.voucher.feed.workflow.dto.LiveFeedDTO;
+import sg.edu.nus.iss.voucher.feed.workflow.dto.FeedDTO;
 import sg.edu.nus.iss.voucher.feed.workflow.entity.Feed;
 import sg.edu.nus.iss.voucher.feed.workflow.strategy.IFeedStrategy;
 
@@ -27,14 +27,14 @@ public class EmailStrategy implements IFeedStrategy {
 	@Value("${frontend.url}") String frontendURL;
 
 	@Override
-	public boolean sendNotification(LiveFeedDTO liveFeedDTO) {
+	public boolean sendNotification(FeedDTO feedDTO) {
 		
 		try {
 
-			String campaignURL = frontendURL + "/campaign/"+liveFeedDTO.getCampaignId().trim();
+			String campaignURL = frontendURL + "/campaign/"+feedDTO.getCampaignId().trim();
 
 			String subject = "Explore Our Exciting [[campaign]] Campaign" ;
-			subject = subject.replace("[[campaign]]", liveFeedDTO.getCampaignDescription());
+			subject = subject.replace("[[campaign]]", feedDTO.getCampaignDescription());
 			
 			String body = "Dear [[name]],<br><br>" 
 					+ "You’re invited to join us for a special event at [[store]]<br><br>" 
@@ -44,15 +44,15 @@ public class EmailStrategy implements IFeedStrategy {
 					+ "Thank you for being a valued customer." + "<br><br>"
 					+ "<i>(This is an auto-generated email, please do not reply)</i>";
 
-			body = body.replace("[[name]]", liveFeedDTO.getUserName());
-			body = body.replace("[[store]]", liveFeedDTO.getStoreName());
-			body = body.replace("[[campaign]]", liveFeedDTO.getCampaignDescription());
+			body = body.replace("[[name]]", feedDTO.getUserName());
+			body = body.replace("[[store]]", feedDTO.getStoreName());
+			body = body.replace("[[campaign]]", feedDTO.getCampaignDescription());
 			body = body.replace("[[URL]]", campaignURL);
 			
 
-			boolean isSend = sesSenderService.sendEmail(emailFrom, Arrays.asList(liveFeedDTO.getEmail()), subject, body);
-			logger.info("Email notification for Campaign id: " + liveFeedDTO.getCampaignDescription() + " sent to user "
-					+ liveFeedDTO.getEmail() + ".");
+			boolean isSend = sesSenderService.sendEmail(emailFrom, Arrays.asList(feedDTO.getEmail()), subject, body);
+			logger.info("Email notification for Campaign id: " + feedDTO.getCampaignDescription() + " sent to user "
+					+ feedDTO.getEmail() + ".");
 			return isSend;
 			
 

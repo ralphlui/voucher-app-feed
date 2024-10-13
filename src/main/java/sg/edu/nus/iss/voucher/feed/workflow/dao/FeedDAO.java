@@ -49,7 +49,9 @@ public class FeedDAO {
 
 	final String FEEDID = "FeedId";
 	final String CAMPAIGNID="CampaignId";
+	final String CAMPAIGNDESCRIPTION = "CampaignDescription";
 	final String STOREID = "StoreId";
+	final String STORENAME = "StoreName";
 	final String ISDELETED = "IsDeleted";
 	final String ISREADED = "IsReaded";
 	final String READTIME = "ReadTime";
@@ -83,7 +85,9 @@ public class FeedDAO {
 				Feed feed = new Feed();
 				feed.setFeedId(item.getString(FEEDID));
 				feed.setCampaignId(item.getString(CAMPAIGNID));
+				feed.setCampaignDescription(item.getString(CAMPAIGNDESCRIPTION));
 				feed.setStoreId(item.getString(STOREID));
+				feed.setStoreName(item.getString(STORENAME));
 				feed.setUserId(item.getString(USERID));
 				feed.setEmail(item.getString(EMAIL));
 				feed.setUserName(item.getString(USERNAME));
@@ -115,7 +119,7 @@ public class FeedDAO {
 	}
 	
 	public Feed findById(String feedId) {
-	    Feed feed = null;
+	    Feed  feed = new Feed();
 	    try {
 	        Map<String, AttributeValue> key = new HashMap<>();
 	        key.put(FEEDID, new AttributeValue().withS(feedId.trim()));
@@ -124,9 +128,9 @@ public class FeedDAO {
 	                new GetItemRequest().withTableName(feedTbl).withKey(key)).getItem();
 
 	        if (item != null && !item.isEmpty()) {
-	            feed = new Feed();
+	           
 	            feed.setFeedId(GeneralUtility.makeNotNull(item.get(FEEDID).getS()));
-	            feed.setCampaignId(GeneralUtility.makeNotNull(item.get(CAMPAIGNID).getS()));
+	            feed.setCampaignId(GeneralUtility.makeNotNull(item.get(CAMPAIGNID).getS()));	            
 	            feed.setStoreId(GeneralUtility.makeNotNull(item.get(STOREID).getS()));
 	            feed.setUserName(GeneralUtility.makeNotNull(item.get(USERNAME).getS()));
 	            feed.setEmail(GeneralUtility.makeNotNull(item.get(EMAIL).getS()));
@@ -136,6 +140,8 @@ public class FeedDAO {
 	            feed.setIsReaded(GeneralUtility.makeNotNull(item.get(ISREADED).getS()));
 	            feed.setReadTime(GeneralUtility.makeNotNull(item.get(READTIME).getS()));
 	            feed.setCreatedDate(GeneralUtility.makeNotNull(item.get(CREATEDDATE).getS()));
+	            feed.setCampaignDescription(GeneralUtility.makeNotNull(item.get(CAMPAIGNDESCRIPTION).getS()));
+	            feed.setStoreName(GeneralUtility.makeNotNull(item.get(STORENAME).getS()));
 	        }
 
 	    } catch (Exception ex) {
@@ -178,7 +184,9 @@ public class FeedDAO {
 					 .with(USERNAME, feed.getUserName())
 					 .with(ISDELETED,"0").with(ISREADED, "0")
 					 .with(CAMPAIGNID, feed.getCampaignId())
+					 .with(CAMPAIGNDESCRIPTION, feed.getCampaignDescription())
 					 .with(STOREID, feed.getStoreId())
+					 .with(STORENAME, feed.getStoreName())
 					 .with(CATEGORY, feed.getCategory())
 					 .with(READTIME, ""));
 			 
