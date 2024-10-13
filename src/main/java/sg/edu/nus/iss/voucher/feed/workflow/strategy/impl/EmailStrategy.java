@@ -39,7 +39,7 @@ public class EmailStrategy implements IFeedStrategy {
 			String body = "Dear [[name]],<br><br>" 
 					+ "You’re invited to join us for a special event at [[store]]<br><br>" 
 					+ "We’ve got exciting promotions and offers lined up just for you. Don’t miss out!<br>"
-					+ " <h3> Vist  <a href=\"[[URL]]\" target=\"_self\">[[campaign]]</a> for more details and RSVP."
+					+ " <h3> Vist  <a href=\"[[URL]]\" target=\"_self\">[[campaign]]</a> for more details."
 					+ " </h3>" 
 					+ "Thank you for being a valued customer." + "<br><br>"
 					+ "<i>(This is an auto-generated email, please do not reply)</i>";
